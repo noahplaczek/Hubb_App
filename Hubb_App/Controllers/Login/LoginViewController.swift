@@ -7,9 +7,13 @@
 //
 
 import UIKit
+import FirebaseAuth
+import JGProgressHUD
 
 class LoginViewController: UIViewController {
 
+    private let spinner = JGProgressHUD(style: .dark)
+    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.clipsToBounds = true
@@ -32,7 +36,7 @@ class LoginViewController: UIViewController {
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
         field.placeholder = "Email Address..."
-        field.backgroundColor = .white
+        field.backgroundColor = .secondarySystemBackground
         
         // Buffer so text is not flush against the left of the text field
         field.leftView = UIView(frame: CGRect(x: 0, y: 0 , width: 5, height: 0))
@@ -50,7 +54,7 @@ class LoginViewController: UIViewController {
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
         field.placeholder = "Password..."
-        field.backgroundColor = .white
+        field.backgroundColor = .secondarySystemBackground
         field.leftView = UIView(frame: CGRect(x: 0, y: 0 , width: 5, height: 0))
         field.leftViewMode = .always
         field.isSecureTextEntry = true
@@ -73,7 +77,6 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         title = "Log In"
         view.backgroundColor = .systemBackground
         
@@ -99,31 +102,67 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func loginButtonTapped() {
+        
+        emailField.resignFirstResponder()
+        passwordField.resignFirstResponder()
+    
         guard let email = emailField.text, let password = passwordField.text,
             !email.isEmpty, !password.isEmpty else {
                 alertUserLoginError(is: LoginError.emptyField)
                 return
         }
-        if email.hasSuffix("@gmail.com") {
-            // Firebase Login
+        
+        spinner.show(in: view)
+        
+        // Firebase Log In
+        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: {[weak self] authResult, error in
+            guard let strongSelf = self else {
+                return
+            }
             
-        }
-        else {
-            alertUserLoginError(is: LoginError.notCollegeEmail)
-        }
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
+            }
+            
+            guard let result = authResult, error == nil else {
+                print("Failed to log in user with email: \(email)")
+                return
+            }
+            let user = result.user
+            
+            let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+            DatabaseManager.shared.getDataFor(path: safeEmail, completion: { result in
+                switch result {
+                case .success(let data):
+                    guard let userData = data as? [String: Any],
+                        let firstName = userData["first_name"] as? String,
+                        let lastName = userData["last_name"] as? String else {
+                            return
+                    }
+
+                    UserDefaults.standard.setValue("\(firstName) \(lastName)", forKey: "name")
+                    
+                case .failure(let error):
+                    print("Failed to read data with error: \(error)")
+                }
+                
+            })
+
+            UserDefaults.standard.set(email, forKey: "email")
+            
+            print("Logged in user: \(user)")
+            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+        })
+        
     }
     
     func alertUserLoginError(is error: LoginError) {
         let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
         switch error {
-        case .emptyField:
+        default:
             alert.title = "Whoops!"
             alert.message = "Please enter all information"
-        case .notCollegeEmail:
-            alert.title = "Whoops!"
-            alert.message = "Please enter a valid college email"
         }
-        
         
         alert.addAction(UIAlertAction(title: "Dismiss", style:  .cancel, handler: nil))
         
@@ -133,7 +172,6 @@ class LoginViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
-        
         let size = scrollView.width/3
         imageView.frame = CGRect(x: (scrollView.width-size)/2,
                                  y: scrollView.height/5,
@@ -152,12 +190,13 @@ class LoginViewController: UIViewController {
                                   width: scrollView.width - 60,
                                  height: 53)
     }
-    
 
+    
+    
 }
 
 enum LoginError {
-    case notCollegeEmail, emptyField
+    case notCollegeEmail, emptyField, userExists
 }
 
 extension LoginViewController: UITextFieldDelegate {

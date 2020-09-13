@@ -3,11 +3,21 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		068CBC5F250CFFFB00953DB4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC5E250CFFFB00953DB4 /* Extensions.swift */; };
+		068CBC61250D1D6E00953DB4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 068CBC60250D1D6E00953DB4 /* GoogleService-Info.plist */; };
+		068CBC63250D200100953DB4 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC62250D200100953DB4 /* DatabaseManager.swift */; };
+		068CBC65250D201B00953DB4 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC64250D201B00953DB4 /* StorageManager.swift */; };
+		068CBC67250D476300953DB4 /* ConversationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */; };
+		068CBC69250D47A700953DB4 /* ConversationsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC68250D47A700953DB4 /* ConversationsModel.swift */; };
+		068CBC6B250D532B00953DB4 /* ExploreConversationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */; };
+		068CBC6D250D689F00953DB4 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6C250D689F00953DB4 /* ChatViewController.swift */; };
+		068CBC6F250D71ED00953DB4 /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6E250D71ED00953DB4 /* ChatModels.swift */; };
+		068CBC71250E8F2400953DB4 /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC70250E8F2400953DB4 /* UserModel.swift */; };
+		068CBC73250E9EC300953DB4 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC72250E9EC300953DB4 /* ProfileViewModel.swift */; };
 		06DE7223250CF6A400AA0CC7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7222250CF6A400AA0CC7 /* AppDelegate.swift */; };
 		06DE7225250CF6A400AA0CC7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7224250CF6A400AA0CC7 /* SceneDelegate.swift */; };
 		06DE7227250CF6A400AA0CC7 /* ConversationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7226250CF6A400AA0CC7 /* ConversationsViewController.swift */; };
@@ -19,10 +29,21 @@
 		06DE7241250CF85600AA0CC7 /* PhotoViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7240250CF85600AA0CC7 /* PhotoViewerViewController.swift */; };
 		06DE7243250CF87A00AA0CC7 /* NewConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */; };
 		06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */; };
+		3E3B78A5F9EC4673AF4AAF2E /* Pods_Hubb_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		068CBC5E250CFFFB00953DB4 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		068CBC60250D1D6E00953DB4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		068CBC62250D200100953DB4 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		068CBC64250D201B00953DB4 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
+		068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationTableViewCell.swift; sourceTree = "<group>"; };
+		068CBC68250D47A700953DB4 /* ConversationsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationsModel.swift; sourceTree = "<group>"; };
+		068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreConversationsViewController.swift; sourceTree = "<group>"; };
+		068CBC6C250D689F00953DB4 /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		068CBC6E250D71ED00953DB4 /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
+		068CBC70250E8F2400953DB4 /* UserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
+		068CBC72250E9EC300953DB4 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		06DE721F250CF6A400AA0CC7 /* Hubb_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hubb_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		06DE7222250CF6A400AA0CC7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		06DE7224250CF6A400AA0CC7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -36,6 +57,9 @@
 		06DE7240250CF85600AA0CC7 /* PhotoViewerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewerViewController.swift; sourceTree = "<group>"; };
 		06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationViewController.swift; sourceTree = "<group>"; };
 		06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.debug.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.debug.xcconfig"; sourceTree = "<group>"; };
+		75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hubb_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1724DCB77ACBDC350A7F465 /* Pods-Hubb_App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.release.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +67,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E3B78A5F9EC4673AF4AAF2E /* Pods_Hubb_App.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,6 +79,8 @@
 			children = (
 				06DE7221250CF6A400AA0CC7 /* Hubb_App */,
 				06DE7220250CF6A400AA0CC7 /* Products */,
+				DFC7E097EBC2F3E2EDB9B075 /* Pods */,
+				18330B0278AA70AD204AB52B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -68,6 +95,7 @@
 		06DE7221250CF6A400AA0CC7 /* Hubb_App */ = {
 			isa = PBXGroup;
 			children = (
+				068CBC60250D1D6E00953DB4 /* GoogleService-Info.plist */,
 				06DE723A250CF74A00AA0CC7 /* Resources */,
 				06DE7239250CF74500AA0CC7 /* ViewModels */,
 				06DE7238250CF73F00AA0CC7 /* Models */,
@@ -86,6 +114,8 @@
 				06DE7240250CF85600AA0CC7 /* PhotoViewerViewController.swift */,
 				06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */,
 				06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */,
+				068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */,
+				068CBC6C250D689F00953DB4 /* ChatViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -95,6 +125,7 @@
 			children = (
 				06DE723B250CF76D00AA0CC7 /* Storyboards */,
 				06DE722B250CF6A600AA0CC7 /* Assets.xcassets */,
+				068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -102,6 +133,10 @@
 		06DE7238250CF73F00AA0CC7 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				068CBC68250D47A700953DB4 /* ConversationsModel.swift */,
+				068CBC6E250D71ED00953DB4 /* ChatModels.swift */,
+				068CBC70250E8F2400953DB4 /* UserModel.swift */,
+				068CBC72250E9EC300953DB4 /* ProfileViewModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -119,6 +154,8 @@
 				06DE7222250CF6A400AA0CC7 /* AppDelegate.swift */,
 				06DE7224250CF6A400AA0CC7 /* SceneDelegate.swift */,
 				068CBC5E250CFFFB00953DB4 /* Extensions.swift */,
+				068CBC62250D200100953DB4 /* DatabaseManager.swift */,
+				068CBC64250D201B00953DB4 /* StorageManager.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -141,6 +178,23 @@
 			path = Login;
 			sourceTree = "<group>";
 		};
+		18330B0278AA70AD204AB52B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DFC7E097EBC2F3E2EDB9B075 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */,
+				C1724DCB77ACBDC350A7F465 /* Pods-Hubb_App.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -148,9 +202,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 06DE7233250CF6A600AA0CC7 /* Build configuration list for PBXNativeTarget "Hubb_App" */;
 			buildPhases = (
+				8FD30535552FDEC837B0F636 /* [CP] Check Pods Manifest.lock */,
 				06DE721B250CF6A400AA0CC7 /* Sources */,
 				06DE721C250CF6A400AA0CC7 /* Frameworks */,
 				06DE721D250CF6A400AA0CC7 /* Resources */,
+				51A5B656C8320E0F2DA10A6C /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -200,6 +256,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				06DE722F250CF6A600AA0CC7 /* LaunchScreen.storyboard in Resources */,
+				068CBC61250D1D6E00953DB4 /* GoogleService-Info.plist in Resources */,
 				06DE722C250CF6A600AA0CC7 /* Assets.xcassets in Resources */,
 				06DE722A250CF6A400AA0CC7 /* Main.storyboard in Resources */,
 			);
@@ -207,20 +264,71 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		51A5B656C8320E0F2DA10A6C /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Hubb_App/Pods-Hubb_App-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Hubb_App/Pods-Hubb_App-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Hubb_App/Pods-Hubb_App-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8FD30535552FDEC837B0F636 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Hubb_App-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		06DE721B250CF6A400AA0CC7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				068CBC69250D47A700953DB4 /* ConversationsModel.swift in Sources */,
 				06DE723D250CF82E00AA0CC7 /* LoginViewController.swift in Sources */,
 				068CBC5F250CFFFB00953DB4 /* Extensions.swift in Sources */,
+				068CBC65250D201B00953DB4 /* StorageManager.swift in Sources */,
+				068CBC63250D200100953DB4 /* DatabaseManager.swift in Sources */,
+				068CBC6B250D532B00953DB4 /* ExploreConversationsViewController.swift in Sources */,
 				06DE7243250CF87A00AA0CC7 /* NewConversationViewController.swift in Sources */,
 				06DE723F250CF83A00AA0CC7 /* RegisterViewController.swift in Sources */,
+				068CBC71250E8F2400953DB4 /* UserModel.swift in Sources */,
 				06DE7227250CF6A400AA0CC7 /* ConversationsViewController.swift in Sources */,
 				06DE7223250CF6A400AA0CC7 /* AppDelegate.swift in Sources */,
+				068CBC67250D476300953DB4 /* ConversationTableViewCell.swift in Sources */,
+				068CBC73250E9EC300953DB4 /* ProfileViewModel.swift in Sources */,
 				06DE7225250CF6A400AA0CC7 /* SceneDelegate.swift in Sources */,
 				06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */,
+				068CBC6D250D689F00953DB4 /* ChatViewController.swift in Sources */,
 				06DE7241250CF85600AA0CC7 /* PhotoViewerViewController.swift in Sources */,
+				068CBC6F250D71ED00953DB4 /* ChatModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -362,6 +470,7 @@
 		};
 		06DE7234250CF6A600AA0CC7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -380,6 +489,7 @@
 		};
 		06DE7235250CF6A600AA0CC7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C1724DCB77ACBDC350A7F465 /* Pods-Hubb_App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;

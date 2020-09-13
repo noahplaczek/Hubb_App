@@ -7,24 +7,113 @@
 //
 
 import UIKit
+import FirebaseAuth
+import SDWebImage
 
 class ProfileViewController: UIViewController {
-
+    
+    private let tableView: UITableView = {
+        let table = UITableView()
+        table.register(ProfileTableViewCell.self,
+                       forCellReuseIdentifier: ProfileTableViewCell.identifier) // registers a cell
+        
+        return table
+    }()
+    
+    var data = [ProfileViewModel]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.addSubview(tableView)
+        view.backgroundColor = .systemBackground
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        data.append(ProfileViewModel(viewModelType: .info,
+                                     title: "Name: \(UserDefaults.standard.value(forKey: "name") as? String ?? "No Name")",
+                                     handler: nil))
+        data.append(ProfileViewModel(viewModelType: .info,
+                                     title: "Email: \(UserDefaults.standard.value(forKey: "email") as? String ?? "No Name")",
+                                    handler: nil))
+        data.append(ProfileViewModel(viewModelType: .logout, title: "Log Out", handler: { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            
+            let actionSheet = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
+            
+            actionSheet.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { [weak self] _ in
+                
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                UserDefaults.standard.setValue(nil, forKey: "email")
+                UserDefaults.standard.setValue(nil, forKey: "name")
+                
+                do {
+                    try FirebaseAuth.Auth.auth().signOut()
+                    // if log out successful, go back to login screen
+                    let vc = LoginViewController()
+                    let nav = UINavigationController(rootViewController: vc)
+                    nav.modalPresentationStyle = .fullScreen
+                    strongSelf.present(nav, animated: false)
+                }
+                catch {
+                    print("Failed to log out")
+                }
+            }))
+            
+            actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
+            strongSelf.present(actionSheet, animated: true)
+        }))
+        
 
-        // Do any additional setup after loading the view.
+
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
     }
-    */
+    
+}
 
+extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return data.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let viewModel = data[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: ProfileTableViewCell.identifier, for: indexPath) as! ProfileTableViewCell
+        cell.setUp(with: viewModel)
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        data[indexPath.row].handler?()
+    }
+}
+
+class ProfileTableViewCell: UITableViewCell {
+    
+    static let identifier = "ProfileTableViewCell"
+    
+    public func setUp(with viewModel: ProfileViewModel) {
+        self.textLabel?.text = viewModel.title
+        switch viewModel.viewModelType {
+        case .info:
+            textLabel?.textAlignment = .left
+            selectionStyle = .none
+        case .logout:
+            textLabel?.textColor = .red
+            textLabel?.textAlignment = .center
+        }
+    }
+    
 }

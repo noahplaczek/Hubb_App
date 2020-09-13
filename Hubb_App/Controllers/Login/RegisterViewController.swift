@@ -7,8 +7,12 @@
 //
 
 import UIKit
+import FirebaseAuth
+import JGProgressHUD
 
 class RegisterViewController: UIViewController {
+    
+    private let spinner = JGProgressHUD(style: .dark)
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -22,6 +26,9 @@ class RegisterViewController: UIViewController {
 //        imageView.image = UIImage(systemName: "person.circle")
 //        imageView.tintColor = .gray
 //        imageView.contentMode = .scaleAspectFit
+//        imageView.layer.masksToBounds = true
+//        imageView.layer.borderWidth = 2
+//        imageView.layer.borderColor = UIColor.lightGray.cgColor
 //        return imageView
 //    }()
     
@@ -36,7 +43,7 @@ class RegisterViewController: UIViewController {
         field.placeholder = "First name..."
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .white
+        field.backgroundColor = .secondarySystemBackground
         return field
     }()
     
@@ -51,7 +58,7 @@ class RegisterViewController: UIViewController {
         field.placeholder = "Last name..."
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .white
+        field.backgroundColor = .secondarySystemBackground
         return field
     }()
     
@@ -66,7 +73,7 @@ class RegisterViewController: UIViewController {
         field.placeholder = "Email Address..."
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .white
+        field.backgroundColor = .secondarySystemBackground
         return field
     }()
     
@@ -81,7 +88,7 @@ class RegisterViewController: UIViewController {
         field.placeholder = "Password..."
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .white
+        field.backgroundColor = .secondarySystemBackground
         field.isSecureTextEntry = true
         return field
     }()
@@ -100,12 +107,7 @@ class RegisterViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log In"
-        view.backgroundColor = .white
-        
-//        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register",
-//                                                            style: .done,
-//                                                            target: self,
-//                                                            action: #selector(didTapRegister))
+        view.backgroundColor = .systemBackground
         
         registerButton.addTarget(self, action: #selector(registerButtonTapped),
                               for: .touchUpInside)
@@ -131,7 +133,7 @@ class RegisterViewController: UIViewController {
 //        imageView.addGestureRecognizer(gesture)
     }
 //    @objc private func didTapChangeProfilePic() {
-//        print("Change pic called")
+//        presentPhotoActionSheet()
 //    }
     
     override func viewDidLayoutSubviews() {
@@ -142,6 +144,7 @@ class RegisterViewController: UIViewController {
 //                                 y: 20,
 //                                 width: size,
 //                                 height: size)
+//      imageView.layer.cornerRadius = imageView.width / 2.0
         
         firstNameField.frame = CGRect(x: 30,
                                   y: (scrollView.width - size) / 2,
@@ -186,34 +189,69 @@ class RegisterViewController: UIViewController {
                 return
         }
         if email.hasSuffix("@gmail.com") {
-            // Firebase Login
             
-        }
-        else {
-            alertUserLoginError(is: LoginError.notCollegeEmail)
+            spinner.show(in: view)
+            
+            // Firebase Register
+            
+            DatabaseManager.shared.userExists(with: email, completion: {[weak self] exists in
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    strongSelf.spinner.dismiss()
+                }
+                
+                guard !exists else {
+                    // user already exists
+                    self?.alertUserLoginError(is: LoginError.userExists)
+                    return
+                }
+                
+                FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
+                    guard authResult != nil, error == nil else {
+                        print("Error creating user")
+                        return
+                    }
+                    
+                    // Cache user information
+                    UserDefaults.standard.setValue("\(firstName) \(lastName)", forKey: "name")
+                    UserDefaults.standard.setValue(email, forKey: "email")
+                    
+                    // Add user to DB
+                    
+                    let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
+                    DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                        if success {
+                            print("User successfully added to database")
+                        }
+                        else {
+                            self?.alertUserLoginError(is: LoginError.notCollegeEmail)
+                        }
+                    })
+                    strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                })
+            })
         }
     }
-    
-    func alertUserLoginError(is error: LoginError) {
-        let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
-        switch error {
-        case .emptyField:
-            alert.title = "Whoops!"
-            alert.message = "Please enter all information"
-        case .notCollegeEmail:
-            alert.title = "Whoops!"
-            alert.message = "Please enter a valid college email"
-        }
-        alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         
-        present(alert, animated: true)
-    }
-    
-    @objc private func didTapRegister() {
-        let vc = RegisterViewController()
-        vc.title = "Create Account"
-        navigationController?.pushViewController(vc, animated: true)
-    }
+        func alertUserLoginError(is error: LoginError) {
+            let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
+            switch error {
+            case .emptyField:
+                alert.title = "Whoops!"
+                alert.message = "Please enter all information"
+            case .notCollegeEmail:
+                alert.title = "Whoops!"
+                alert.message = "Please enter a valid college email"
+            case .userExists:
+                alert.message = "Looks like a user account for that email address already exists"
+            }
+            alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
+            
+            present(alert, animated: true)
+        }
     
 }
 
@@ -230,3 +268,55 @@ extension RegisterViewController: UITextFieldDelegate {
         return true
     }
 }
+
+//extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate { // allows us to get results of user taking a picture or selecting photo from camera roll
+//    
+//    func presentPhotoActionSheet(){
+//        let actionSheet = UIAlertController(title: "Profile Picture", message: "How would you like to select a picture", preferredStyle: .actionSheet)
+//        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+//        actionSheet.addAction(UIAlertAction(title: "Take Photo",
+//                                            style: .default,
+//                                            handler: {[weak self] _ in
+//                                                self?.presentCamera()
+//        }))
+//        actionSheet.addAction(UIAlertAction(title: "Choose Photo",
+//                                            style: .default,
+//                                            handler: {[weak self] _ in
+//                                                self?.presentPhotoPicker()
+//        }))
+//        
+//        present(actionSheet, animated: true)
+//    }
+//    
+//    func presentCamera() {
+//        let vc = UIImagePickerController()
+//        vc.sourceType = .camera
+//        vc.delegate = self
+//        vc.allowsEditing = true
+//        present(vc, animated: true)
+//    }
+//    
+//    func presentPhotoPicker() {
+//        let vc = UIImagePickerController()
+//        vc.sourceType = .photoLibrary
+//        vc.delegate = self
+//        vc.allowsEditing = true
+//        present(vc, animated: true)
+//    }
+//    
+//    // called when user takes or selects a photo
+//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+//        print(info)
+//        picker.dismiss(animated: true, completion: nil)
+//        guard let selectedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage else {
+//            return
+//        }
+//        self.imageView.image = selectedImage
+//    }
+//    
+//    // called when user cancels selection / photo
+//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+//        picker.dismiss(animated: true, completion: nil)
+//    }
+//    
+//}
