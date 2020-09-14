@@ -9,6 +9,8 @@
 import UIKit
 
 class NewConversationViewController: UIViewController {
+    
+    public var completion: ((Group) -> (Void))?
 
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -101,13 +103,18 @@ class NewConversationViewController: UIViewController {
         
         let newGroup = Group(id: nil, name: groupName, description: groupDescription, creator: groupCreatorEmail)
         
-        DatabaseManager.shared.createNewConversation(group: newGroup, completion: { result in
+        DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
             switch result {
             case .success(let group):
-                let vc = ChatViewController(group: group)
-                vc.title = group.name
-                vc.navigationItem.largeTitleDisplayMode = .never
-                self.navigationController?.pushViewController(vc, animated: true)
+                strongSelf.dismiss(animated: true, completion: { 
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    strongSelf.completion?(group)
+                })
             case .failure(let error):
                 print("Failed to create conversation: \(error)")
             }

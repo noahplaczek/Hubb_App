@@ -216,7 +216,8 @@ class RegisterViewController: UIViewController {
                     }
                     
                     // Cache user information
-                    UserDefaults.standard.setValue("\(firstName) \(lastName)", forKey: "name")
+                    UserDefaults.standard.setValue("\(lastName)", forKey: "last_name")
+                    UserDefaults.standard.setValue("\(firstName)", forKey: "first_name")
                     UserDefaults.standard.setValue(email, forKey: "email")
                     
                     // Add user to DB

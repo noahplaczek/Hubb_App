@@ -51,6 +51,17 @@ class ConversationsViewController: UIViewController {
     
     @objc func didTapComposeButton() {
         let vc = NewConversationViewController()
+        
+        vc.completion = { [weak self] group in
+            guard let strongSelf = self,
+                let groupInfo = group as? Group else {
+                return
+            }
+            let vc = ChatViewController(group: groupInfo)
+            vc.title = group.name
+            vc.navigationItem.largeTitleDisplayMode = .never
+            strongSelf.navigationController?.pushViewController(vc, animated: true)
+        }
         // EDIT: Presents from the ConversationsView. This is fine unless we create from the Explore View.
         // Need to better understand Navigation Controller / rootViewController
         let navVC = UINavigationController(rootViewController: vc)

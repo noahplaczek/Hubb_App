@@ -50,7 +50,8 @@ class ProfileViewController: UIViewController {
                     return
                 }
                 
-                UserDefaults.standard.setValue(nil, forKey: "email")
+                UserDefaults.standard.setValue(nil, forKey: "last_name")
+                UserDefaults.standard.setValue(nil, forKey: "first_name")
                 UserDefaults.standard.setValue(nil, forKey: "name")
                 
                 do {

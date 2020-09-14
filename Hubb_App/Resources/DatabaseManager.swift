@@ -126,14 +126,17 @@ extension DatabaseManager {
     public func createNewConversation(group: Group, completion: @escaping (Result<Group, Error>) -> Void) {
         let newGroupReference = database.child("group_detail").childByAutoId()
         
-        let groupId = newGroupReference.key
+        guard let groupId = newGroupReference.key else {
+            completion(.failure(DatabaseError.failedToCreateGroup))
+            return
+        }
         let dateString = ChatViewController.dateFormatter.string(from: Date())
 //        let firstMessage = LatestMessage(date: dateString,
 //                                         text: group.description,
 //                                         isRead: false)
         
         let newGroup: [String : Any] = [
-            "id": groupId as Any,
+            "group_id": groupId,
             "name": group.name,
             "description": group.description,
             "date_created": dateString,
@@ -149,14 +152,81 @@ extension DatabaseManager {
         
         let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator)
         
-        newGroupReference.setValue(newGroup, withCompletionBlock: { error, _ in
-        guard error == nil else {
+        // Update Group Details with new group info
+        newGroupReference.setValue(newGroup, withCompletionBlock: { [weak self] error, _ in
+        guard error == nil,
+            let senderName = UserDefaults.standard.value(forKey: "first_name"),
+            let strongSelf = self else {
             completion(.failure(DatabaseError.failedToCreateGroup))
             return
         }
+            print("succesfully added to Group Details")
+            
+            let firstMessageReference = strongSelf.database.child("group_messages").child(groupId).childByAutoId()
+            
+            guard let messageId = firstMessageReference.key else {
+                completion(.failure(DatabaseError.failedToCreateGroup))
+                return
+            }
+            
+            let firstMessage: [String: Any] = [
+                "content": group.description,
+                "type": "text",
+                "sender_email": group.creator,
+                "sender_name": senderName,
+                "group_id": groupId as Any,
+                "date": dateString,
+                "isRead": false,
+                "message_id": messageId
+            ]
+            
+            // Update Group Messages with group description as first message
+            firstMessageReference.setValue(firstMessage, withCompletionBlock: { error, _ in
+                guard error == nil else {
+                    completion(.failure(DatabaseError.failedToCreateGroup))
+                    return
+                }
+                    print("succesfully added first group message")
+                })
             completion(.success(newGroupInfo))
         })
+    }
     
+    /// Retrieves all messages for a given conversation
+    public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<[Message], Error>) -> Void) {
+
+        database.child("group_messages/\(id)").observe(.value, with: {snapshot in
+            guard let value = snapshot.value as? [String: Any] else {
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            // convert dictionaries into our model. first need to validate all keys are present
+            let messages: [Message] = value.compactMap({ dictionary in
+                guard
+                    let message = dictionary.value as? [String: Any],
+                    let senderName = message["sender_name"] as? String,
+                    let senderEmail = message["sender_email"] as? String,
+                    let content = message["content"] as? String,
+                    let dateString = message["date"] as? String,
+                    let messageId = message["message_id"] as? String,
+                    let _ = message["type"] as? String,
+                    let _ = message["group_id"] as? String,
+                    let _ = message["isRead"] as? Bool,
+                    let date = ChatViewController.dateFormatter.date(from: dateString) else {
+                        return nil
+                }
+                
+                let sender = Sender(photoURL: "",
+                                    senderId: senderEmail,
+                                    displayName: senderName)
+
+                return Message(sender: sender,
+                               messageId: messageId,
+                               sentDate: date,
+                               kind: .text(content))
+            })
+            completion(.success(messages))
+        })
     }
 
 }
