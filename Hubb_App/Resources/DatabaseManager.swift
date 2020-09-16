@@ -69,8 +69,6 @@ extension DatabaseManager {
             "first_name": user.firstName,
             "last_name": user.lastName,
             "uid": user.uid,
-            "groups": [
-            ]
         ]
         
         database.child("users").child("\(user.uid)").setValue(newElement, withCompletionBlock: { error, _ in
@@ -115,33 +113,26 @@ extension DatabaseManager {
             return
         }
         let dateString = ChatViewController.dateFormatter.string(from: Date())
-//        let firstMessage = LatestMessage(date: dateString,
-//                                         text: group.description,
-//                                         isRead: false)
 
-        let latestMessage = LatestMessage(date: dateString, text: group.description, isRead: false)
-
-        let newGroup: [String : Any] = [
+        let newGroup: [String: Any] = [
             "group_id": groupId,
             "name": group.name,
             "description": group.description,
-            "date_created": dateString,
+            "creator_email": group.creator,
             "members": [
                 group.creator
             ],
             "last_message": [
                 "date": dateString,
                 "text": group.description,
-                "isRead": false
+                "is_read": false
             ]
         ]
-
-        let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator, latestMessage: latestMessage)
-
+        
         // Update Group Details with new group info
         newGroupReference.setValue(newGroup, withCompletionBlock: { [weak self] error, _ in
         guard error == nil,
-            let senderName = UserDefaults.standard.value(forKey: "first_name"),
+            let senderName = UserDefaults.standard.value(forKey: "first_name") as? String,
             let strongSelf = self else {
             completion(.failure(DatabaseError.failedToCreateGroup))
             return
@@ -157,16 +148,17 @@ extension DatabaseManager {
 
             let firstMessage: [String: Any] = [
                 "content": group.description,
+                // EDIT: will not just be text when photos are introduced
                 "type": "text",
                 "sender_email": group.creator,
                 "sender_name": senderName,
                 "group_id": groupId as Any,
-                "date": dateString,
+                "date": group.latestMessage?.date as Any,
                 "isRead": false,
                 "message_id": messageId
             ]
 
-            // Update Group Messages with group description as first message
+            // Update Group Messages using group description as first message text
             firstMessageReference.setValue(firstMessage, withCompletionBlock: { error, _ in
                 guard error == nil else {
                     completion(.failure(DatabaseError.failedToCreateGroup))
@@ -174,37 +166,50 @@ extension DatabaseManager {
                 }
                     print("succesfully added first group message")
                 })
+            
+            guard let uid = UserDefaults.standard.value(forKey: "uid") else {
+                return
+            }
+            
+            // Update User to include Group ID in their groups
+            strongSelf.database.child("users").child("\(uid)").observeSingleEvent(of: .value, with: { snapshot in
+                guard let userInfo = snapshot.value as? [String: Any]
+                else {
+                    return
+                }
 
-            // Snapshot of users
-//            strongSelf.database.child("users").observeSingleEvent(of: .value, with: { snapshot in
-//                guard let userCollection = snapshot.value as? [[String: Any]] else {
-//                    return
-//                }
-//
-//                if let user = userCollection.first(where: {
-//                    guard let userEmail = $0["email"] as? String else {
-//                        return false
-//                    }
-//                    return userEmail == group.creator
-//                }) {
-//
-//
-//                    }
-//                }
-//
-//            })
-            // Traverse to find user
+                var newUserGroups: [String]
 
-            // If groups is empty, set value for groups
+                // If user has already joined groups, append this group.
+                if var currentUserGroups = userInfo["groups"] as? [String] {
+                    currentUserGroups.append(groupId)
+                    newUserGroups = currentUserGroups
+                }
+                // Otherwise, create groups for user
+                else {
+                    newUserGroups = [groupId]
+                }
 
-            // Otherwise append to group listing
+//                let updatedUserInfo: [String : Any] = [
+//                    "email": safeEmail,
+//                    "first_name": firstName,
+//                    "last_name": lastName,
+//                    "uid": uid,
+//                    "groups": newUserGroups
+//                ]
 
-
-            completion(.success(newGroupInfo))
+                strongSelf.database.child("users").child("\(uid)").child("groups").setValue(newUserGroups, withCompletionBlock: { error, _ in
+                    guard error == nil else {
+                        completion(.failure(DatabaseError.failedToCreateGroup))
+                        return
+                    }
+                    completion(.success(group))
+                })
+            })
         })
     }
 
-}
+} 
  
 // MARK: - Sending messages / conversations
 extension DatabaseManager {

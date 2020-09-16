@@ -84,8 +84,7 @@ class NewConversationViewController: UIViewController {
     }
     
     @objc private func createGroup() {
-        // Takes the text fields, creates a unique ID, calls function to push to database
-        // DB function takes text fields and ID and pushes to GroupID node and adds GroupID to user node
+        
         groupNameField.resignFirstResponder()
         groupDescriptionField.resignFirstResponder()
 
@@ -93,7 +92,7 @@ class NewConversationViewController: UIViewController {
             let groupName = groupNameField.text,
             let groupDescription = groupDescriptionField.text,
             !groupName.isEmpty, !groupDescription.isEmpty else {
-                // Alert user of errors
+                groupCreationError(message: "Please enter both Group Name and Group Description")
                 return
         }
         guard let groupCreator = UserDefaults.standard.value(forKey: "email") as? String else {
@@ -120,6 +119,14 @@ class NewConversationViewController: UIViewController {
             }
 
         })
+    }
+    
+    func groupCreationError(message: String) {
+        let alert = UIAlertController(title: "Whoops!", message: message, preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Dismiss", style:  .cancel, handler: nil))
+        
+        present(alert, animated: true)
     }
 
 }
