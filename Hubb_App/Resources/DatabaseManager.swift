@@ -223,15 +223,15 @@ extension DatabaseManager {
             var messages = [Message]()
             
             for children in snapshot.children.allObjects as! [DataSnapshot] {
-                guard let currentMessage = children.value as? [String: Any],
-                    let senderName = currentMessage["sender_name"] as? String,
-                    let senderEmail = currentMessage["sender_email"] as? String,
-                    let content = currentMessage["content"] as? String,
-                    let messageId = currentMessage["message_id"] as? String,
-                    let dateString = currentMessage["date"] as? String,
-                    let _ = currentMessage["type"] as? String,
-                    let _ = currentMessage["group_id"] as? String,
-                    let _ = currentMessage["is_read"] as? Bool,
+                guard let currentMessageInfo = children.value as? [String: Any],
+                    let senderName = currentMessageInfo["sender_name"] as? String,
+                    let senderEmail = currentMessageInfo["sender_email"] as? String,
+                    let content = currentMessageInfo["content"] as? String,
+                    let messageId = currentMessageInfo["message_id"] as? String,
+                    let dateString = currentMessageInfo["date"] as? String,
+                    let _ = currentMessageInfo["type"] as? String,
+                    let _ = currentMessageInfo["group_id"] as? String,
+                    let _ = currentMessageInfo["is_read"] as? Bool,
                     let date = ChatViewController.dateFormatter.date(from: dateString) else {
                         return
                 }
@@ -240,12 +240,12 @@ extension DatabaseManager {
                                     senderId: senderEmail,
                                     displayName: senderName)
                 
-                let newMessage = Message(sender: sender,
+                let currentMessage = Message(sender: sender,
                                          messageId: messageId,
                                          sentDate: date,
                                          kind: .text(content))
                 
-                messages.append(newMessage)
+                messages.append(currentMessage)
             }
             completion(.success(messages))
         })
@@ -253,34 +253,65 @@ extension DatabaseManager {
         
     /// Fetches all existing conversations
     public func getAllConversations(completion: @escaping (Result<[Group], Error>) -> Void) {
-        database.child("group_detail").observe(.value, with: { snapshot in
-            guard let groupData = snapshot.value as? [String: Any] else {
+        database.child("group_detail").observe(.value, with: {snapshot in
+            guard let _ = snapshot.value else {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
-            // convert dictionaries into our model. first need to validate all keys are present
-            let allGroups: [Group] = groupData.compactMap({ dictionary in
-                guard
-                    let groupInfo = dictionary.value as? [String: Any],
-                    let groupId = groupInfo["group_id"] as? String,
-                    let name = groupInfo["name"] as? String,
-                    let creatorName = groupInfo["creator_email"] as? String,
-                    let description = groupInfo["description"] as? String,
-                    let latestMessage = groupInfo["last_message"] as? [String: Any],
+            
+            var groups = [Group]()
+            
+            for children in snapshot.children.allObjects as! [DataSnapshot] {
+                guard let currentGroupInfo = children.value as? [String: Any],
+                    let groupId = currentGroupInfo["group_id"] as? String,
+                    let name = currentGroupInfo["name"] as? String,
+                    let creatorName = currentGroupInfo["creator_email"] as? String,
+                    let description = currentGroupInfo["description"] as? String,
+                    let latestMessage = currentGroupInfo["last_message"] as? [String: Any],
                     let date = latestMessage["date"] as? String,
                     let message = latestMessage["text"] as? String,
-                    let isRead = latestMessage["is_read"] as? Bool
-                    else{
-                        return nil
+                    let isRead = latestMessage["is_read"] as? Bool else {
+                        return
                 }
-                // create and return model
+                
                 let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
-                return Group(id: groupId, name: name, description: description, creator: creatorName, latestMessage: latestMessageObject)
-            })
-            completion(.success(allGroups))
-        
-            
+                let currentGroup = Group(id: groupId, name: name, description: description, creator: creatorName, latestMessage: latestMessageObject)
+                
+                groups.append(currentGroup)
+            }
+            completion(.success(groups))
         })
+        
+        
+        
+//        database.child("group_detail").observe(.value, with: { snapshot in
+//            guard let groupData = snapshot.value as? [String: Any] else {
+//                completion(.failure(DatabaseError.failedToFetch))
+//                return
+//            }
+//            // convert dictionaries into our model. first need to validate all keys are present
+//            let allGroups: [Group] = groupData.compactMap({ dictionary in
+//                guard
+//                    let groupInfo = dictionary.value as? [String: Any],
+//                    let groupId = groupInfo["group_id"] as? String,
+//                    let name = groupInfo["name"] as? String,
+//                    let creatorName = groupInfo["creator_email"] as? String,
+//                    let description = groupInfo["description"] as? String,
+//                    let latestMessage = groupInfo["last_message"] as? [String: Any],
+//                    let date = latestMessage["date"] as? String,
+//                    let message = latestMessage["text"] as? String,
+//                    let isRead = latestMessage["is_read"] as? Bool
+//                    else{
+//                        return nil
+//                }
+//                // create and return model
+//                let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
+//                return Group(id: groupId, name: name, description: description, creator: creatorName, latestMessage: latestMessageObject)
+//            })
+//            completion(.success(allGroups))
+//
+//
+//        })
         
     }
     
