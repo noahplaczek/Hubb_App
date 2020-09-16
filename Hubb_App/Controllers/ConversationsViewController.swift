@@ -28,6 +28,7 @@ class ConversationsViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
         setupTableView()
+        startListeningForConversations()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -54,38 +55,33 @@ class ConversationsViewController: UIViewController {
         tableView.dataSource = self
     }
     
-//    private func startListeningForConversations() {
-//        guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
-//            return
-//        }
-//
-//        print("starting conversation fetch...")
-//
-//        let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
-//        DatabaseManager.shared.getAllConversations(for: safeEmail, completion: { [weak self] result in
-//            switch result {
-//            case .success(let conversations):
-//                guard !conversations.isEmpty else { // if conversation list empty, no need to update table view
+    private func startListeningForConversations() {
+
+        print("starting conversation fetch...")
+
+        DatabaseManager.shared.getAllConversations(completion: { [weak self] result in
+            switch result {
+            case .success(let groups):
+                guard !groups.isEmpty else { // if conversation list empty, no need to update table view
 //                    self?.noConversationsLabel.isHidden = false
-//                    self?.tableView.isHidden = true
-//                    return
-//                }
-//                self?.tableView.isHidden = false
-//                self?.noConversationsLabel.isHidden = true
-//                self?.conversations = conversations
-//
-//                // call reload data on table view - specificall main thread bc that is where all UI operations should occur
-//                DispatchQueue.main.async {
-//                    self?.tableView.reloadData()
-//                }
-//
-//            case .failure(let error):
+                    self?.tableView.isHidden = true
+                    return
+                }
+                self?.tableView.isHidden = false
+ //               self?.noConversationsLabel.isHidden = true
+                self?.groups = groups
+                // call reload data on table view - specificall main thread bc that is where all UI operations should occur
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
+
+            case .failure(let error):
 //                self?.noConversationsLabel.isHidden = false
-//                self?.tableView.isHidden = true
-//                print("failed to get convos: \(error)")
-//            }
-//        })
-//    }
+                self?.tableView.isHidden = true
+                print("failed to get convos: \(error)")
+            }
+        })
+    }
     
     @objc func didTapComposeButton() {
         let vc = NewConversationViewController()

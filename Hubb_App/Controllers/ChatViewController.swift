@@ -27,15 +27,14 @@ class ChatViewController: MessagesViewController {
     }()
     
     private var selfSender: Sender? {
-        guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
+        guard let uid = UserDefaults.standard.value(forKey: "uid") as? String,
+        let displayName = UserDefaults.standard.value(forKey: "first_name") as? String else {
             return nil
         }
-        // email must match the Database info to determine who the sender is
-        let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
         
         return Sender(photoURL: "",
-               senderId: safeEmail,
-               displayName: "Me")
+               senderId: uid,
+               displayName: displayName)
     }
     
 
@@ -58,7 +57,7 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
 //        messagesCollectionView.messageCellDelegate = self // ImageViewer
-//        messageInputBar.delegate = self
+        messageInputBar.delegate = self
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -67,26 +66,28 @@ class ChatViewController: MessagesViewController {
         guard let id = groupId else{
             return
         }
-        listenForMessages(id: id, shouldScrollToBottom: true)
+        listenForMessages(id: id)
     }
     
-    private func listenForMessages(id: String, shouldScrollToBottom: Bool) {
-        DatabaseManager.shared.getAllMessagesForConversation(with: id, completion: { [weak self] result in 
+    private func listenForMessages(id: String) {
+        
+        var shouldScrollToBottom = true
+        
+        DatabaseManager.shared.getAllMessagesForConversation(with: id, completion: { [weak self] result in
             switch result {
             case .success(let messages):
                 guard !messages.isEmpty else {
                     return
                 }
                 self?.messages = messages
-
                 DispatchQueue.main.async {
                 // if user has scrolled to the top and a new message comes in, this wont scroll to bottom
                         self?.messagesCollectionView.reloadDataAndKeepOffset()
                     if shouldScrollToBottom {
                         self?.messagesCollectionView.scrollToBottom()
+                        shouldScrollToBottom = false
                     }
                 }
-
             case .failure(let error):
                 print("failed to get messages: \(error)")
             }
@@ -94,7 +95,48 @@ class ChatViewController: MessagesViewController {
     }
 }
 
-
+extension ChatViewController: InputBarAccessoryViewDelegate {
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
+        guard !text.replacingOccurrences(of: " ", with: "").isEmpty,
+            let selfSender = self.selfSender,
+            let groupId = self.groupId else {
+                print("not sending")
+                return
+        }
+        
+//                let message = Message(sender: selfSender,
+//                                      messageId: messageId,
+//                                      sentDate: Date(),
+//                                      kind: .text(text))
+        
+//        print("Sending: \(text)")
+        
+        // append to existing conversation data
+        DatabaseManager.shared.sendMessage(to: groupId, messageText: text, sender: selfSender, completion: { [weak self] success in
+            if success {
+                print("message sent")
+                self?.messageInputBar.inputTextView.text = nil
+            } else {
+                print("failed to send")
+            }
+        })
+    }
+    
+    
+//    private func createMessageId() -> String? { // EDIT: Firebase push IDs?
+//        // date, otherUserEmail, senderEmail
+//        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+//            return nil
+//        }
+//        let safeCurrentUserEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
+//
+//        let dateString = Self.dateFormatter.string(from: Date()) // Self since this is a static instance
+//        let newIdentifier = "\(otherUserEmail)_\(safeCurrentUserEmail)_\(dateString)"
+//        print("Created new message id: \(newIdentifier)")
+//
+//        return newIdentifier
+//    }
+}
 
 extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
 
