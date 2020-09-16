@@ -13,6 +13,7 @@ struct Group {
     let name: String
     let description: String
     let creator: String
+    let latestMessage: LatestMessage?
 }
 
 struct LatestMessage {

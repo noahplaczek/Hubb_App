@@ -116,41 +116,36 @@ class LoginViewController: UIViewController {
         
         // Firebase Log In
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: {[weak self] authResult, error in
-            guard let strongSelf = self else {
-                return
+            guard let strongSelf = self,
+            let currentUser = FirebaseAuth.Auth.auth().currentUser,
+                let result = authResult,
+                error == nil else {
+                    print("Failed to log in user with email: \(email)")
+                    return
             }
+        
+            let uid = currentUser.uid
+            
+            UserDefaults.standard.set(uid, forKey: "uid")
+            UserDefaults.standard.set(email, forKey: "email")
             
             DispatchQueue.main.async {
                 strongSelf.spinner.dismiss()
             }
             
-            guard let result = authResult, error == nil else {
-                print("Failed to log in user with email: \(email)")
-                return
-            }
             let user = result.user
             
-            let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
-            DatabaseManager.shared.getDataFor(path: safeEmail, completion: { result in
+            DatabaseManager.shared.getDataForUser(uid: uid, completion: { result in
                 switch result {
-                case .success(let data):
-                    guard let userData = data as? [String: Any],
-                        let firstName = userData["first_name"] as? String,
-                        let lastName = userData["last_name"] as? String else {
-                            return
-                    }
-
-                    UserDefaults.standard.setValue("\(lastName)", forKey: "last_name")
-                    UserDefaults.standard.setValue("\(firstName)", forKey: "first_name")
+                case .success(let userData):
+                    UserDefaults.standard.set("\(userData.lastName)", forKey: "last_name")
+                    UserDefaults.standard.set("\(userData.firstName)", forKey: "first_name")
                     
                 case .failure(let error):
                     print("Failed to read data with error: \(error)")
                 }
                 
             })
-
-            UserDefaults.standard.set(email, forKey: "email")
-            
             print("Logged in user: \(user)")
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })

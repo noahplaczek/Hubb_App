@@ -22,13 +22,13 @@ class ConversationTableViewCell: UITableViewCell {
 //        return imageView
 //    }()
     
-    private let userNameLabel: UILabel = {
+    private let groupNameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 21, weight: .semibold)
         return label
     }()
     
-    private let userMessageLabel: UILabel = {
+    private let groupDescriptionLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 19, weight: .regular)
         label.numberOfLines = 0 // allow to line wrap
@@ -38,8 +38,8 @@ class ConversationTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 //        contentView.addSubview(userImageView)
-        contentView.addSubview(userNameLabel)
-        contentView.addSubview(userMessageLabel)
+        contentView.addSubview(groupNameLabel)
+        contentView.addSubview(groupDescriptionLabel)
     }
     
     required init?(coder: NSCoder) {
@@ -55,38 +55,23 @@ class ConversationTableViewCell: UITableViewCell {
 //                                     width: 100,
 //                                     height: 100)
         
-        userNameLabel.frame = CGRect(x: //userImageView.right+
+        groupNameLabel.frame = CGRect(x: //userImageView.right+
                                         10,
                                      y: 10,
                                      width: contentView.width - 20,//(- userImageView.width) // buffer of 20
                                      height: (contentView.height - 20)/2)
         
-        userMessageLabel.frame = CGRect(x: //userImageView.right+
+        groupDescriptionLabel.frame = CGRect(x: //userImageView.right+
                                             10,
-                                        y: userNameLabel.bottom + 10,
+                                        y: groupNameLabel.bottom + 10,
                                         width: contentView.width - 20,// - userImageView.width,
                                         height: (contentView.height - 20)/2)
         
     }
     
-//    public func configure(with model: Group) {
-//        userMessageLabel.text = model.latestMessage.text
-//        userNameLabel.text = model.name
-//
-//        let path = "images/\(model.otherUserEmail)_profile_picture.png"
-//        StorageManager.shared.downloadURL(for: path, completion: { [weak self] result in
-//            switch result {
-//            case .success(let url):
-//                DispatchQueue.main.async {
-//                    // SDWebImage - downloads image and assigns to image view
-//                    self?.userImageView.sd_setImage(with: url, completed: nil)
-//                }
-//            case .failure(let error):
-//                print("failed to get image url: \(error)")
-//            }
-//        })
-//    }
-
-    
-    
+    public func configure(with model: Group) {
+        groupDescriptionLabel.text = model.latestMessage?.text
+        groupNameLabel.text = model.name
+    }
+  
 }

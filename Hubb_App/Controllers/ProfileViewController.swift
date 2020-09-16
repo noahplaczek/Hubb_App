@@ -32,7 +32,7 @@ class ProfileViewController: UIViewController {
         tableView.dataSource = self
         
         data.append(ProfileViewModel(viewModelType: .info,
-                                     title: "Name: \(UserDefaults.standard.value(forKey: "name") as? String ?? "No Name")",
+                                     title: "Name: \(UserDefaults.standard.value(forKey: "first_name") as? String ?? "No") \(UserDefaults.standard.value(forKey: "last_name") as? String ?? "Name")",
                                      handler: nil))
         data.append(ProfileViewModel(viewModelType: .info,
                                      title: "Email: \(UserDefaults.standard.value(forKey: "email") as? String ?? "No Name")",

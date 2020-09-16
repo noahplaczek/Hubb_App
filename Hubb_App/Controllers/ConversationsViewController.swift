@@ -11,6 +11,8 @@ import FirebaseAuth
 
 class ConversationsViewController: UIViewController {
     
+    private var groups = [Group]()
+    
     private let tableView: UITableView = {
         let table = UITableView()
         table.isHidden = false
@@ -19,15 +21,13 @@ class ConversationsViewController: UIViewController {
         
         return table
     }()
-
-    private var loginObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(tableView)
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
-//        setupTableView()
+        setupTableView()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -49,15 +49,52 @@ class ConversationsViewController: UIViewController {
         }
     }
     
+    private func setupTableView() {
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+    
+//    private func startListeningForConversations() {
+//        guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
+//            return
+//        }
+//
+//        print("starting conversation fetch...")
+//
+//        let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+//        DatabaseManager.shared.getAllConversations(for: safeEmail, completion: { [weak self] result in
+//            switch result {
+//            case .success(let conversations):
+//                guard !conversations.isEmpty else { // if conversation list empty, no need to update table view
+//                    self?.noConversationsLabel.isHidden = false
+//                    self?.tableView.isHidden = true
+//                    return
+//                }
+//                self?.tableView.isHidden = false
+//                self?.noConversationsLabel.isHidden = true
+//                self?.conversations = conversations
+//
+//                // call reload data on table view - specificall main thread bc that is where all UI operations should occur
+//                DispatchQueue.main.async {
+//                    self?.tableView.reloadData()
+//                }
+//
+//            case .failure(let error):
+//                self?.noConversationsLabel.isHidden = false
+//                self?.tableView.isHidden = true
+//                print("failed to get convos: \(error)")
+//            }
+//        })
+//    }
+    
     @objc func didTapComposeButton() {
         let vc = NewConversationViewController()
         
         vc.completion = { [weak self] group in
-            guard let strongSelf = self,
-                let groupInfo = group as? Group else {
+            guard let strongSelf = self else {
                 return
             }
-            let vc = ChatViewController(group: groupInfo)
+            let vc = ChatViewController(group: group)
             vc.title = group.name
             vc.navigationItem.largeTitleDisplayMode = .never
             strongSelf.navigationController?.pushViewController(vc, animated: true)
@@ -67,6 +104,43 @@ class ConversationsViewController: UIViewController {
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
     }
+
     
 }
 
+extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return groups.count
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let model = groups[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: ConversationTableViewCell.identifier,
+                                                 for: indexPath) as! ConversationTableViewCell
+        cell.configure(with: model)
+        
+        return cell
+    }
+    
+    // when a user clicks on a cell, want to push onto stack
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true) // unhighlights what you selected
+        let model = groups[indexPath.row]
+        openConversation(model)
+    }
+    
+    func openConversation(_ model: Group) {
+        let vc = ChatViewController(group: model)
+        vc.title = model.name
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 120
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+    
+}

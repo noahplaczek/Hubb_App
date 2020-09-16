@@ -88,7 +88,7 @@ class NewConversationViewController: UIViewController {
         // DB function takes text fields and ID and pushes to GroupID node and adds GroupID to user node
         groupNameField.resignFirstResponder()
         groupDescriptionField.resignFirstResponder()
-        
+
         guard
             let groupName = groupNameField.text,
             let groupDescription = groupDescriptionField.text,
@@ -100,16 +100,16 @@ class NewConversationViewController: UIViewController {
             return
         }
         let groupCreatorEmail = DatabaseManager.safeEmail(emailAddress: groupCreator)
-        
-        let newGroup = Group(id: nil, name: groupName, description: groupDescription, creator: groupCreatorEmail)
-        
-        DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self] result in
+
+        let newGroup = Group(id: nil, name: groupName, description: groupDescription, creator: groupCreatorEmail, latestMessage: nil)
+
+        DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self]  result in
             guard let strongSelf = self else {
                 return
             }
             switch result {
             case .success(let group):
-                strongSelf.dismiss(animated: true, completion: { 
+                strongSelf.dismiss(animated: true, completion: {
                     guard let strongSelf = self else {
                         return
                     }
@@ -118,7 +118,7 @@ class NewConversationViewController: UIViewController {
             case .failure(let error):
                 print("Failed to create conversation: \(error)")
             }
-        
+
         })
     }
 
@@ -126,14 +126,14 @@ class NewConversationViewController: UIViewController {
 
 extension NewConversationViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
+
         if textField == groupNameField {
             groupDescriptionField.becomeFirstResponder()
         }
         else if textField == groupDescriptionField {
             createGroup()
         }
-        
+
         return true
     }
 }

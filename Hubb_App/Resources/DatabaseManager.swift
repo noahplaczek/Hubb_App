@@ -22,17 +22,6 @@ final class DatabaseManager {
         return safeEmail
     }
     
-    /// Returns dictionary node at child path
-    public func getDataFor(path: String, completion: @escaping (Result<Any, Error>) -> Void) {
-        database.child("\(path)").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value else {
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-            completion(.success(value))
-        })
-    }
-    
     public enum DatabaseError: Error {
         case failedToFetch, failedToCreateGroup
     }
@@ -51,13 +40,16 @@ extension DatabaseManager {
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
         
         database.child("users").observeSingleEvent(of: .value, with: {snapshot in
-            guard let users = snapshot.value as? [[String: Any]] else {
+            guard let users = snapshot.value as? [String: Any] else {
                 completion(false)
                 return
             }
             
             if users.contains(where: {
-                safeEmail == $0["email"] as? String
+                guard let user = $0.value as? [String: String] else {
+                    return false
+                }
+                return safeEmail == user["email"]
             }) {
                 completion(true)
                 return
@@ -71,49 +63,41 @@ extension DatabaseManager {
     
     /// Insert new user to database
     public func insertUser(with user: ChatAppUser, completion: @escaping (Bool) -> Void){
-                // Get reference to existing user array, if exists. otherwise, create new
-        database.child("users").observeSingleEvent(of: .value, with: { [weak self] snapshot in
-            guard let strongSelf = self else {
+
+        let newElement: [String : Any] = [
+            "email": DatabaseManager.safeEmail(emailAddress: user.emailAddress),
+            "first_name": user.firstName,
+            "last_name": user.lastName,
+            "uid": user.uid,
+            "groups": [
+            ]
+        ]
+        
+        database.child("users").child("\(user.uid)").setValue(newElement, withCompletionBlock: { error, _ in
+            guard error == nil else {
+                completion(false)
                 return
             }
-            
-            if var usersCollection = snapshot.value as? [[String: Any]] {
-                // append to user dictionary
-                let newElement = [
-                    "email": DatabaseManager.safeEmail(emailAddress: user.emailAddress),
-                    "first_name": user.firstName,
-                    "last_name": user.lastName
-                ]
-                usersCollection.append(newElement)
-                
-                strongSelf.database.child("users").setValue(usersCollection, withCompletionBlock: {
-                    error, _ in
-                    guard error == nil else {
-                        completion(false)
-                        return
-                    }
-                    completion(true)
-                })
-                
-            } else {
-                // create the user array
-                let newCollection: [[String: Any]] = [
-                    [
-                        "email": DatabaseManager.safeEmail(emailAddress: user.emailAddress),
-                        "first_name": user.firstName,
-                        "last_name": user.lastName
-                    ]
-                ]
-                
-                strongSelf.database.child("users").setValue(newCollection, withCompletionBlock: {
-                    error, _ in
-                    guard error == nil else {
-                        completion(false)
-                        return
-                    }
-                    completion(true)
-                })
+            completion(true)
+        })
+        
+    }
+    
+    /// Returns dictionary node at child path
+    public func getDataForUser(uid: String, completion: @escaping (Result<ChatAppUser, Error>) -> Void) {
+        database.child("users").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+            guard let userInfo = snapshot.value as? [String: String],
+                let firstName: String = userInfo["first_name"],
+                let lastName: String = userInfo["last_name"],
+                let email: String = userInfo["email"],
+                let uid: String = userInfo["uid"] else {
+                    completion(.failure(DatabaseError.failedToFetch))
+                    return
             }
+            
+            let userData = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email, uid: uid)
+            
+            completion(.success(userData))
         })
     }
 
@@ -125,7 +109,7 @@ extension DatabaseManager {
     
     public func createNewConversation(group: Group, completion: @escaping (Result<Group, Error>) -> Void) {
         let newGroupReference = database.child("group_detail").childByAutoId()
-        
+
         guard let groupId = newGroupReference.key else {
             completion(.failure(DatabaseError.failedToCreateGroup))
             return
@@ -134,7 +118,9 @@ extension DatabaseManager {
 //        let firstMessage = LatestMessage(date: dateString,
 //                                         text: group.description,
 //                                         isRead: false)
-        
+
+        let latestMessage = LatestMessage(date: dateString, text: group.description, isRead: false)
+
         let newGroup: [String : Any] = [
             "group_id": groupId,
             "name": group.name,
@@ -149,9 +135,9 @@ extension DatabaseManager {
                 "isRead": false
             ]
         ]
-        
-        let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator)
-        
+
+        let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator, latestMessage: latestMessage)
+
         // Update Group Details with new group info
         newGroupReference.setValue(newGroup, withCompletionBlock: { [weak self] error, _ in
         guard error == nil,
@@ -161,14 +147,14 @@ extension DatabaseManager {
             return
         }
             print("succesfully added to Group Details")
-            
+
             let firstMessageReference = strongSelf.database.child("group_messages").child(groupId).childByAutoId()
-            
+
             guard let messageId = firstMessageReference.key else {
                 completion(.failure(DatabaseError.failedToCreateGroup))
                 return
             }
-            
+
             let firstMessage: [String: Any] = [
                 "content": group.description,
                 "type": "text",
@@ -179,7 +165,7 @@ extension DatabaseManager {
                 "isRead": false,
                 "message_id": messageId
             ]
-            
+
             // Update Group Messages with group description as first message
             firstMessageReference.setValue(firstMessage, withCompletionBlock: { error, _ in
                 guard error == nil else {
@@ -188,9 +174,40 @@ extension DatabaseManager {
                 }
                     print("succesfully added first group message")
                 })
+
+            // Snapshot of users
+//            strongSelf.database.child("users").observeSingleEvent(of: .value, with: { snapshot in
+//                guard let userCollection = snapshot.value as? [[String: Any]] else {
+//                    return
+//                }
+//
+//                if let user = userCollection.first(where: {
+//                    guard let userEmail = $0["email"] as? String else {
+//                        return false
+//                    }
+//                    return userEmail == group.creator
+//                }) {
+//
+//
+//                    }
+//                }
+//
+//            })
+            // Traverse to find user
+
+            // If groups is empty, set value for groups
+
+            // Otherwise append to group listing
+
+
             completion(.success(newGroupInfo))
         })
     }
+
+}
+ 
+// MARK: - Sending messages / conversations
+extension DatabaseManager {
     
     /// Retrieves all messages for a given conversation
     public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<[Message], Error>) -> Void) {
@@ -228,6 +245,33 @@ extension DatabaseManager {
             completion(.success(messages))
         })
     }
-
+    
+    /// Fetches and returns all conversations for the user with passed in email
+//    public func getAllConversations(for email: String, completion: @escaping (Result<[Group], Error>) -> Void) {
+//        database.child("\(email)/conversations").observe(.value, with: {snapshot in
+//            guard let value = snapshot.value as? [[String: Any]] else {
+//                completion(.failure(DatabaseError.failedToFetch))
+//                return
+//            }
+//            // convert dictionaries into our model. first need to validate all keys are present
+//            let conversations: [Conversation] = value.compactMap({ dictionary in
+//                print(dictionary)
+//                guard let conversationId = dictionary["id"] as? String,
+//                    let name = dictionary["name"] as? String,
+//                    let otherUserEmail = dictionary["other_user_email"] as? String,
+//                    let latestMessage = dictionary["latest_message"] as? [String: Any],
+//                    let date = latestMessage["date"] as? String,
+//                    let message = latestMessage["message"] as? String,
+//                    let isRead = latestMessage["is_read"] as? Bool else{
+//                        return nil
+//                }
+//                // create and return model
+//                let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
+//                return Conversation(id: conversationId, name: name, otherUserEmail: otherUserEmail, latestMessage: latestMessageObject)
+//            })
+//            completion(.success(conversations))
+//
+//        })
+//    }
+    
 }
- 
