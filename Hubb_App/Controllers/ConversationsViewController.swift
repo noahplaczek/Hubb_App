@@ -11,6 +11,8 @@ import FirebaseAuth
 
 class ConversationsViewController: UIViewController {
     
+    static public let myColor = UIColor(red: 101.0/255.0, green: 200.0/255.0, blue: 255.0/255.0, alpha: 1.0)
+    
     private var groups = [Group]()
     
     private let tableView: UITableView = {
@@ -26,6 +28,9 @@ class ConversationsViewController: UIViewController {
         super.viewDidLoad()
         view.addSubview(tableView)
         view.backgroundColor = .systemBackground
+        navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.tintColor = UIColor.white
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
         setupTableView()
         startListeningForConversations()

@@ -28,6 +28,10 @@ class ProfileViewController: UIViewController {
         view.addSubview(tableView)
         view.backgroundColor = .systemBackground
         
+        navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.tintColor = UIColor.white
+        
         tableView.delegate = self
         tableView.dataSource = self
         

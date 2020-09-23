@@ -13,6 +13,7 @@ class ConversationTableViewCell: UITableViewCell {
     // Static property to register cell to table view
     static let identifier = "ConversationTableViewCell"
     
+    
     // EDIT - probably don't need image for convo
 //    private let userImageView: UIImageView = {
 //        let imageView = UIImageView()
@@ -25,13 +26,15 @@ class ConversationTableViewCell: UITableViewCell {
     private let groupNameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 21, weight: .semibold)
+        label.numberOfLines = 2
+ //       label.lineBreakMode = .byWordWrapping
         return label
     }()
     
     private let groupDescriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 19, weight: .regular)
-        label.numberOfLines = 0 // allow to line wrap
+        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.textColor = ConversationsViewController.myColor
         return label
     }()
 
@@ -56,17 +59,17 @@ class ConversationTableViewCell: UITableViewCell {
 //                                     height: 100)
         
         groupNameLabel.frame = CGRect(x: //userImageView.right+
-                                        10,
+                                        20,
                                      y: 10,
                                      width: contentView.width - 20,//(- userImageView.width) // buffer of 20
-                                     height: (contentView.height - 20)/2)
+                                     height: (contentView.height)/2)
         
         groupDescriptionLabel.frame = CGRect(x: //userImageView.right+
-                                            10,
+                                            20,
                                         y: groupNameLabel.bottom + 10,
                                         width: contentView.width - 20,// - userImageView.width,
                                         height: (contentView.height - 20)/2)
-        
+
     }
     
     public func configure(with model: Group) {

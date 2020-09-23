@@ -118,7 +118,7 @@ extension DatabaseManager {
             "group_id": groupId,
             "name": group.name,
             "description": group.description,
-            "creator_email": group.creator,
+            "creator_uid": group.creator,
             "members": [
                 group.creator
             ],
@@ -131,76 +131,70 @@ extension DatabaseManager {
         
         // Update Group Details with new group info
         newGroupReference.setValue(newGroup, withCompletionBlock: { [weak self] error, _ in
-        guard error == nil,
-            let senderName = UserDefaults.standard.value(forKey: "first_name") as? String,
-            let strongSelf = self else {
-            completion(.failure(DatabaseError.failedToCreateGroup))
-            return
-        }
+            guard error == nil,
+                let senderName = UserDefaults.standard.value(forKey: "first_name") as? String,
+                let strongSelf = self else {
+                    completion(.failure(DatabaseError.failedToCreateGroup))
+                    return
+            }
             print("succesfully added to Group Details")
-
+            
             let firstMessageReference = strongSelf.database.child("group_messages").child(groupId).childByAutoId()
-
+            
             guard let messageId = firstMessageReference.key else {
                 completion(.failure(DatabaseError.failedToCreateGroup))
                 return
             }
-
+            
             let firstMessage: [String: Any] = [
                 "content": group.description,
                 // EDIT: will not just be text when photos are introduced
                 "type": "text",
-                "sender_email": group.creator,
+                "sender_uid": group.creator,
                 "sender_name": senderName,
                 "group_id": groupId as Any,
                 "date": dateString,
                 "is_read": false,
                 "message_id": messageId
             ]
-
+            
             // Update Group Messages using group description as first message text
             firstMessageReference.setValue(firstMessage, withCompletionBlock: { error, _ in
                 guard error == nil else {
                     completion(.failure(DatabaseError.failedToCreateGroup))
                     return
                 }
-                    print("succesfully added first group message")
-                })
-            
-            guard let uid = UserDefaults.standard.value(forKey: "uid") else {
-                return
-            }
-            
-            // Update User to include Group ID in their groups
-            strongSelf.database.child("users").child("\(uid)").observeSingleEvent(of: .value, with: { snapshot in
-                guard let userInfo = snapshot.value as? [String: Any]
-                else {
-                    return
-                }
-
-                var newUserGroups: [String]
-
-                // If user has already joined groups, append this group.
-                if var currentUserGroups = userInfo["groups"] as? [String] {
-                    currentUserGroups.append(groupId)
-                    newUserGroups = currentUserGroups
-                }
-                // Otherwise, create groups for user
-                else {
-                    newUserGroups = [groupId]
-                }
-
-                strongSelf.database.child("users").child("\(uid)").child("groups").setValue(newUserGroups, withCompletionBlock: { error, _ in
-                    guard error == nil else {
-                        completion(.failure(DatabaseError.failedToCreateGroup))
-                        return
+                // Update User to include Group ID in their groups
+                strongSelf.database.child("users").child("\(group.creator)").observeSingleEvent(of: .value, with: { snapshot in
+                    guard let userInfo = snapshot.value as? [String: Any]
+                        else {
+                            return
                     }
                     
-                    let latestMessage = LatestMessage(date: dateString, text: group.description, isRead: false)
+                    var newUserGroups: [String]
                     
-                    let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator, latestMessage: latestMessage)
+                    // If user has already joined groups, append this group.
+                    if var currentUserGroups = userInfo["groups"] as? [String] {
+                        currentUserGroups.append(groupId)
+                        newUserGroups = currentUserGroups
+                    }
+                        // Otherwise, create groups for user
+                    else {
+                        newUserGroups = [groupId]
+                    }
                     
-                    completion(.success(newGroupInfo))
+                    strongSelf.database.child("users").child("\(group.creator)").child("groups").setValue(newUserGroups, withCompletionBlock: { error, _ in
+                        guard error == nil else {
+                            completion(.failure(DatabaseError.failedToCreateGroup))
+                            return
+                        }
+                        
+                        let latestMessage = LatestMessage(date: dateString, text: group.description, isRead: false)
+                        
+                        let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator, latestMessage: latestMessage)
+                        
+                        completion(.success(newGroupInfo))
+                    })
                 })
             })
         })
@@ -225,7 +219,7 @@ extension DatabaseManager {
             for children in snapshot.children.allObjects as! [DataSnapshot] {
                 guard let currentMessageInfo = children.value as? [String: Any],
                     let senderName = currentMessageInfo["sender_name"] as? String,
-                    let senderEmail = currentMessageInfo["sender_email"] as? String,
+                    let senderUid = currentMessageInfo["sender_uid"] as? String,
                     let content = currentMessageInfo["content"] as? String,
                     let messageId = currentMessageInfo["message_id"] as? String,
                     let dateString = currentMessageInfo["date"] as? String,
@@ -237,7 +231,7 @@ extension DatabaseManager {
                 }
                 
                 let sender = Sender(photoURL: "",
-                                    senderId: senderEmail,
+                                    senderId: senderUid,
                                     displayName: senderName)
                 
                 let currentMessage = Message(sender: sender,
@@ -265,7 +259,7 @@ extension DatabaseManager {
                 guard let currentGroupInfo = children.value as? [String: Any],
                     let groupId = currentGroupInfo["group_id"] as? String,
                     let name = currentGroupInfo["name"] as? String,
-                    let creatorName = currentGroupInfo["creator_email"] as? String,
+                    let creatorUid = currentGroupInfo["creator_uid"] as? String,
                     let description = currentGroupInfo["description"] as? String,
                     let latestMessage = currentGroupInfo["last_message"] as? [String: Any],
                     let date = latestMessage["date"] as? String,
@@ -275,64 +269,32 @@ extension DatabaseManager {
                 }
                 
                 let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
-                let currentGroup = Group(id: groupId, name: name, description: description, creator: creatorName, latestMessage: latestMessageObject)
+                let currentGroup = Group(id: groupId, name: name, description: description, creator: creatorUid, latestMessage: latestMessageObject)
                 
-                groups.append(currentGroup)
+                groups.insert(currentGroup, at: 0)
             }
             completion(.success(groups))
         })
         
-        
-        
-//        database.child("group_detail").observe(.value, with: { snapshot in
-//            guard let groupData = snapshot.value as? [String: Any] else {
-//                completion(.failure(DatabaseError.failedToFetch))
-//                return
-//            }
-//            // convert dictionaries into our model. first need to validate all keys are present
-//            let allGroups: [Group] = groupData.compactMap({ dictionary in
-//                guard
-//                    let groupInfo = dictionary.value as? [String: Any],
-//                    let groupId = groupInfo["group_id"] as? String,
-//                    let name = groupInfo["name"] as? String,
-//                    let creatorName = groupInfo["creator_email"] as? String,
-//                    let description = groupInfo["description"] as? String,
-//                    let latestMessage = groupInfo["last_message"] as? [String: Any],
-//                    let date = latestMessage["date"] as? String,
-//                    let message = latestMessage["text"] as? String,
-//                    let isRead = latestMessage["is_read"] as? Bool
-//                    else{
-//                        return nil
-//                }
-//                // create and return model
-//                let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
-//                return Group(id: groupId, name: name, description: description, creator: creatorName, latestMessage: latestMessageObject)
-//            })
-//            completion(.success(allGroups))
-//
-//
-//        })
-        
     }
     
-    //     Sends a message with target conversation and message
+    // Sends a message with target conversation and message
     public func sendMessage(to groupId: String, messageText: String, sender: Sender, completion: @escaping (Bool) -> Void) {
 
         let newMessageReference = database.child("group_messages").child(groupId).childByAutoId()
 
-        guard let messageId = newMessageReference.key,
-            let senderEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+        guard let messageId = newMessageReference.key else {
+            completion(false)
             return
         }
         
-        let safeSenderEmail = DatabaseManager.safeEmail(emailAddress: senderEmail)
         let dateString = ChatViewController.dateFormatter.string(from: Date())
         
         let newMessage: [String: Any] = [
             "content": messageText,
             // EDIT: will not just be text when photos are introduced
             "type": "text",
-            "sender_email": safeSenderEmail,
+            "sender_uid": sender.senderId,
             "sender_name": sender.displayName,
             "group_id": groupId as Any,
             "date": dateString,
@@ -341,183 +303,28 @@ extension DatabaseManager {
         ]
 
         // Update Group Messages using group description as first message text
-        newMessageReference.setValue(newMessage, withCompletionBlock: { error, _ in
+        newMessageReference.setValue(newMessage, withCompletionBlock: { [weak self] error, _ in
             guard error == nil else {
+                completion(false)
                 return
             }
-//                print("succesfully added group message")
+            
+            let lastMessage: [String: Any] = [
+                "date": dateString,
+                "is_read": false,
+                "text": messageText
+            ]
+            
+            self?.database.child("group_detail/\(groupId)/last_message").setValue(lastMessage, withCompletionBlock: { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+                print("successfully updated last message")
+                completion(true)
             })
-        
-//        let message = Message(sender: sender,
-//                              messageId: messageId,
-//                              sentDate: Date(),
-//                              kind: .text(messageText))
-//
-//        // add new message to messages
-//        database.child("\(conversation)/messages").observeSingleEvent(of: .value, with: { [weak self] snapshot in
-//            guard let strongSelf = self else {
-//                return
-//            }
-//            guard var currentMessage = snapshot.value as? [[String: Any]] else {
-//                completion(false)
-//                return
-//            }
-//            let messageDate = newMessage.sentDate
-//            let dateString = ChatViewController.dateFormatter.string(from: messageDate)
-//            var message = ""
-//
-//            // text, photo, video
-//            switch newMessage.kind {
-//            case .text(let messageText):
-//                message = messageText
-//            case .attributedText(_):
-//                break
-//            case .photo(let mediaItem):
-//                if let targetUrlString = mediaItem.url?.absoluteString {
-//                    message = targetUrlString
-//                }
-//            case .video(_):
-//                break
-//            case .location(_):
-//                break
-//            case .emoji(_):
-//                break
-//            case .audio(_):
-//                break
-//            case .contact(_):
-//                break
-//            case .linkPreview(_):
-//                break
-//            case .custom(_):
-//                break
-//            }
-//
-//            guard let myEmail = UserDefaults.standard.value(forKey: "email") as? String else {
-//                completion(false)
-//                return
-//            }
-//            let currentUserEmail = DatabaseManager.safeEmail(emailAddress: myEmail)
-//
-//            let newMessageEntry: [String: Any] = [
-//                "id": newMessage.messageId,
-//                "type": newMessage.kind.messageKindString,
-//                "content": message,
-//                "date": dateString,
-//                "sender_email": currentUserEmail,
-//                "isRead": false,
-//                "name": name
-//            ]
-//
-//            currentMessage.append(newMessageEntry)
-//
-//            strongSelf.database.child("\(conversation)/messages").setValue(currentMessage) { (error, _) in
-//                guard error == nil else {
-//                    completion(false)
-//                    return
-//                }
-//
-//                // Update latest message for both users
-//                strongSelf.database.child("\(currentEmail)/conversations").observeSingleEvent(of: .value, with: { snapshot in
-//                    var databaseEntryConversations = [[String: Any]]()
-//                    let updatedValue: [String: Any] = [
-//                        "date": dateString,
-//                        "is_read": false,
-//                        "message": message
-//                    ]
-//
-//                    if var currentUserConversations = snapshot.value as? [[String: Any]] {
-//                        // Find where conversation ID is current conversation ID
-//                        var position: Int = 0
-//                        for var conversationDictionary in currentUserConversations {
-//                            if let currentId = conversationDictionary["id"] as? String,
-//                                currentId == conversation {
-//
-//                                conversationDictionary["latest_message"] = updatedValue
-//                                currentUserConversations[position] = conversationDictionary
-//                                databaseEntryConversations = currentUserConversations
-//                                break
-//                            }
-//                            position += 1
-//                        }
-//
-//                        if currentUserConversations.count == position {
-//
-//                            let newConversationData: [String: Any] = [
-//                                "id": conversation,
-//                                "other_user_email": DatabaseManager.safeEmail(emailAddress: otherUserEmail),
-//                                "name": name,
-//                                "latest_message": updatedValue
-//                            ]
-//
-//                            currentUserConversations.append(newConversationData)
-//                            databaseEntryConversations = currentUserConversations
-//                        }
-//
-//                    }
-//                    else {
-//
-//                        let newConversationData: [String: Any] = [
-//                            "id": conversation,
-//                            "other_user_email": DatabaseManager.safeEmail(emailAddress: otherUserEmail),
-//                            "name": name,
-//                            "latest_message": updatedValue
-//                        ]
-//
-//                        databaseEntryConversations = [
-//                            newConversationData
-//                        ]
-//                    }
-//
-//                    strongSelf.database.child("\(currentEmail)/conversations").setValue(databaseEntryConversations, withCompletionBlock: { error, _ in
-//                        guard error == nil else {
-//                            completion(false)
-//                            return
-//                        }
-//                    })
-//
-//                })
-//
-//
-//                // update latest message for recipient user
-//                strongSelf.database.child("\(otherUserEmail)/conversations").observeSingleEvent(of: .value, with: { snapshot in
-//                    guard var otherUserConversations = snapshot.value as? [[String: Any]] else {
-//                        completion(false)
-//                        return
-//                    }
-//
-//                    // Find where conversation ID is current conversation ID
-//                    var position: Int = 0
-//
-//                    for var conversationDictionary in otherUserConversations {
-//                        if let currentId = conversationDictionary["id"] as? String,
-//                            currentId == conversation {
-//                            let updatedValue: [String: Any] = [
-//                                "date": dateString,
-//                                "is_read": false,
-//                                "message": message
-//                            ]
-//                            conversationDictionary["latest_message"] = updatedValue
-//
-//                            otherUserConversations[position] = conversationDictionary
-//
-//                            strongSelf.database.child("\(otherUserEmail)/conversations").setValue(otherUserConversations, withCompletionBlock: { error, _ in
-//                                guard error == nil else {
-//                                    completion(false)
-//                                    return
-//                                }
-//                            })
-//                            break
-//                        }
-//                        position += 1
-//                    }
-//                })
-//                completion(true)
-//            }
-//
-//
-//        })
+        })
     }
-    
     
     /// Fetches and returns all conversations for the user with passed in uid
 //    public func getAllConversationsForUser(for uid: String, completion: @escaping (Result<[Group], Error>) -> Void) {

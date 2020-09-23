@@ -95,12 +95,11 @@ class NewConversationViewController: UIViewController {
                 groupCreationError(message: "Please enter both Group Name and Group Description")
                 return
         }
-        guard let groupCreator = UserDefaults.standard.value(forKey: "email") as? String else {
+        guard let groupCreatorUid = UserDefaults.standard.value(forKey: "uid") as? String else {
             return
         }
-        let groupCreatorEmail = DatabaseManager.safeEmail(emailAddress: groupCreator)
 
-        let newGroup = Group(id: nil, name: groupName, description: groupDescription, creator: groupCreatorEmail, latestMessage: nil)
+        let newGroup = Group(id: nil, name: groupName, description: groupDescription, creator: groupCreatorUid, latestMessage: nil)
 
         DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self]  result in
             guard let strongSelf = self else {

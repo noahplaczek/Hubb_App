@@ -16,6 +16,8 @@ class ChatViewController: MessagesViewController {
     private let groupDescription: String
     private var groupId: String?
     
+    private var joinedGroup = false
+    
     private var messages = [Message]()
     
     public static let dateFormatter: DateFormatter = {
@@ -31,7 +33,6 @@ class ChatViewController: MessagesViewController {
         let displayName = UserDefaults.standard.value(forKey: "first_name") as? String else {
             return nil
         }
-        
         return Sender(photoURL: "",
                senderId: uid,
                displayName: displayName)
@@ -58,7 +59,41 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDisplayDelegate = self
 //        messagesCollectionView.messageCellDelegate = self // ImageViewer
         messageInputBar.delegate = self
+        
+        
     }
+    
+//    private func notFavorited() {
+//        //create a new button
+//        let button = UIButton(type: .custom)
+//        //set image for button
+//        button.setImage(UIImage(systemName: "star"), for: .normal)
+//        //add function for button
+//        button.addTarget(self, action: #selector(didTapFavorites), for: .touchUpInside)
+//        //set frame
+//        button.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
+//
+//        let barButton = UIBarButtonItem(customView: button)
+//        //assign button to navigationbar
+//        self.navigationItem.rightBarButtonItem = barButton
+//
+//
+//    }
+    
+//    private func favorited() {
+//        //create a new button
+//        let button = UIButton(type: .custom)
+//        //set image for button
+//        button.setImage(UIImage(systemName: "star.filled"), for: .normal)
+//        //add function for button
+//        button.addTarget(self, action: #selector(didTapFavorites), for: .touchUpInside)
+//        //set frame
+//        button.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
+//
+//        let barButton = UIBarButtonItem(customView: button)
+//        //assign button to navigationbar
+//        self.navigationItem.rightBarButtonItem = barButton
+//    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -93,6 +128,7 @@ class ChatViewController: MessagesViewController {
             }
         })
     }
+    
 }
 
 extension ChatViewController: InputBarAccessoryViewDelegate {
@@ -103,13 +139,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 print("not sending")
                 return
         }
-        
-//                let message = Message(sender: selfSender,
-//                                      messageId: messageId,
-//                                      sentDate: Date(),
-//                                      kind: .text(text))
-        
-//        print("Sending: \(text)")
         
         // append to existing conversation data
         DatabaseManager.shared.sendMessage(to: groupId, messageText: text, sender: selfSender, completion: { [weak self] success in
@@ -122,20 +151,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         })
     }
     
-    
-//    private func createMessageId() -> String? { // EDIT: Firebase push IDs?
-//        // date, otherUserEmail, senderEmail
-//        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
-//            return nil
-//        }
-//        let safeCurrentUserEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
-//
-//        let dateString = Self.dateFormatter.string(from: Date()) // Self since this is a static instance
-//        let newIdentifier = "\(otherUserEmail)_\(safeCurrentUserEmail)_\(dateString)"
-//        print("Created new message id: \(newIdentifier)")
-//
-//        return newIdentifier
-//    }
 }
 
 extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
@@ -146,6 +161,15 @@ extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, Messa
             return sender
         }
         fatalError("Self Sender is nil, email should be cached")
+    }
+    
+    func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        return NSAttributedString(string: message.sender.displayName, attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10), NSAttributedString.Key.foregroundColor: UIColor.darkGray])
+        
+    }
+
+    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
+        return 15
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
