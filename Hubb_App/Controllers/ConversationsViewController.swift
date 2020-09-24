@@ -13,32 +13,65 @@ class ConversationsViewController: UIViewController {
     
     static public let myColor = UIColor(red: 101.0/255.0, green: 200.0/255.0, blue: 255.0/255.0, alpha: 1.0)
     
+    private var allGroups = [Group]()
+    
     private var groups = [Group]()
+    
+    private var searchResults = [Group]()
     
     private let tableView: UITableView = {
         let table = UITableView()
         table.isHidden = false
         table.register(ConversationTableViewCell.self,
                        forCellReuseIdentifier: ConversationTableViewCell.identifier)
-        
+        table.keyboardDismissMode = .onDrag
         return table
+    }()
+    
+    private let noResultsLabel: UILabel = {
+        let label = UILabel()
+        label.isHidden = true
+        label.text = "No Results"
+        label.textAlignment = .center
+        label.textColor = .green
+        label.font = .systemFont(ofSize: 21, weight: .medium)
+        return label
+    }()
+    
+    private var searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = "Search for Groups..."
+        return searchBar
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        validateAuth()
         view.addSubview(tableView)
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationController?.navigationBar.tintColor = UIColor.white
+        
+        navigationController?.navigationBar.topItem?.titleView = searchBar
+        searchBar.delegate = self
+        
+        let tapGesture = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.tableView.addGestureRecognizer(tapGesture)
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
+        
         setupTableView()
         startListeningForConversations()
     }
     
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        self.view.endEditing(true)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        validateAuth()
     }
     
     override func viewDidLayoutSubviews() {
@@ -66,18 +99,25 @@ class ConversationsViewController: UIViewController {
 
         DatabaseManager.shared.getAllConversations(completion: { [weak self] result in
             switch result {
-            case .success(let groups):
-                guard !groups.isEmpty else { // if conversation list empty, no need to update table view
+            case .success(let allGroups):
+                guard !allGroups.isEmpty else { // if conversation list empty, no need to update table view
 //                    self?.noConversationsLabel.isHidden = false
                     self?.tableView.isHidden = true
                     return
                 }
                 self?.tableView.isHidden = false
  //               self?.noConversationsLabel.isHidden = true
-                self?.groups = groups
-                // call reload data on table view - specificall main thread bc that is where all UI operations should occur
-                DispatchQueue.main.async {
-                    self?.tableView.reloadData()
+                
+                if self?.groups.count == self?.allGroups.count {
+                    self?.allGroups = allGroups
+                    self?.groups = allGroups
+                    
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
+                    }
+                }
+                else {
+                    self?.allGroups = allGroups
                 }
 
             case .failure(let error):
@@ -142,6 +182,58 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
     
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .delete
+    }
+    
+}
+
+extension ConversationsViewController: UISearchBarDelegate {
+    // USER SEARCH
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {
+            return
+        }
+        groups.removeAll()
+//        spinner.show(in: view)
+        
+        filterGroups(with: text)
+    }
+    
+    func filterGroups(with term: String) {
+        guard !allGroups.isEmpty else {
+            return
+        }
+        
+//        self.spinner.dismiss()
+                
+        let groups: [Group] = allGroups.filter({
+            let groupInfo = $0.name.lowercased() + " " + $0.name.lowercased()
+            
+            return groupInfo.contains(term.lowercased())
+        })
+        
+        self.groups = groups
+        updateUI()
+    }
+    
+    func updateUI() {
+        if groups.isEmpty {
+            noResultsLabel.isHidden = false
+            tableView.isHidden = true
+        } else {
+            noResultsLabel.isHidden = true
+            tableView.isHidden = false
+            tableView.reloadData() // reloads the tableview to include filtered searches
+        }
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText == "" {
+            print("UISearchBar.text cleared!")
+            groups = allGroups
+            noResultsLabel.isHidden = true
+            tableView.isHidden = false
+            tableView.reloadData()
+        }
     }
     
 }

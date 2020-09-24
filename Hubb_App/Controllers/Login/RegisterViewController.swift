@@ -8,11 +8,11 @@
 
 import UIKit
 import FirebaseAuth
-import JGProgressHUD
+//import JGProgressHUD
 
 class RegisterViewController: UIViewController {
     
-    private let spinner = JGProgressHUD(style: .dark)
+//    private let spinner = JGProgressHUD(style: .dark)
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -190,7 +190,7 @@ class RegisterViewController: UIViewController {
         }
         if email.hasSuffix("@gmail.com") {
             
-            spinner.show(in: view)
+//            spinner.show(in: view)
             
             // Firebase Register
             
@@ -199,9 +199,9 @@ class RegisterViewController: UIViewController {
                     return
                 }
                 
-                DispatchQueue.main.async {
-                    strongSelf.spinner.dismiss()
-                }
+//                DispatchQueue.main.async {
+//                    strongSelf.spinner.dismiss()
+//                }
                 
                 guard !exists else {
                     // user already exists

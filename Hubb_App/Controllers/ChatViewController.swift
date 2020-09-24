@@ -59,8 +59,6 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDisplayDelegate = self
 //        messagesCollectionView.messageCellDelegate = self // ImageViewer
         messageInputBar.delegate = self
-        
-        
     }
     
 //    private func notFavorited() {
@@ -119,7 +117,7 @@ class ChatViewController: MessagesViewController {
                 // if user has scrolled to the top and a new message comes in, this wont scroll to bottom
                         self?.messagesCollectionView.reloadDataAndKeepOffset()
                     if shouldScrollToBottom {
-                        self?.messagesCollectionView.scrollToBottom()
+                        self?.messagesCollectionView.scrollToLastItem()
                         shouldScrollToBottom = false
                     }
                 }
@@ -145,6 +143,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             if success {
                 print("message sent")
                 self?.messageInputBar.inputTextView.text = nil
+                self?.messagesCollectionView.scrollToBottom()
             } else {
                 print("failed to send")
             }

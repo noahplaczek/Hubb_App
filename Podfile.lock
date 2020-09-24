@@ -1,4 +1,6 @@
 PODS:
+  - Firebase/Analytics (6.31.1):
+    - Firebase/Core
   - Firebase/Auth (6.31.1):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 6.9.0)
@@ -78,7 +80,6 @@ PODS:
   - InputBarAccessoryView (5.1.0):
     - InputBarAccessoryView/Core (= 5.1.0)
   - InputBarAccessoryView/Core (5.1.0)
-  - JGProgressHUD (2.1)
   - leveldb-library (1.22)
   - MessageKit (3.3.0):
     - InputBarAccessoryView (~> 5.1.0)
@@ -88,24 +89,13 @@ PODS:
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
   - PromisesObjC (1.2.10)
-  - Realm (5.3.6):
-    - Realm/Headers (= 5.3.6)
-  - Realm/Headers (5.3.6)
-  - RealmSwift (5.3.6):
-    - Realm (= 5.3.6)
-  - SDWebImage (5.9.0):
-    - SDWebImage/Core (= 5.9.0)
-  - SDWebImage/Core (5.9.0)
 
 DEPENDENCIES:
+  - Firebase/Analytics
   - Firebase/Auth
-  - Firebase/Core
   - Firebase/Database
   - Firebase/Storage
-  - JGProgressHUD
   - MessageKit
-  - RealmSwift
-  - SDWebImage
 
 SPEC REPOS:
   trunk:
@@ -122,14 +112,10 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMSessionFetcher
     - InputBarAccessoryView
-    - JGProgressHUD
     - leveldb-library
     - MessageKit
     - nanopb
     - PromisesObjC
-    - Realm
-    - RealmSwift
-    - SDWebImage
 
 SPEC CHECKSUMS:
   Firebase: 658370fa0181826a74b7cfca8d68c5856ca749ae
@@ -145,15 +131,11 @@ SPEC CHECKSUMS:
   GoogleUtilities: 7f2f5a07f888cdb145101d6042bc4422f57e70b3
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
   InputBarAccessoryView: 19953f486a23e846e9487099f92bbe3456e46ce5
-  JGProgressHUD: aa403e9a5b45cae98903c4600cccdd98c0c3ec90
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   MessageKit: 1f07618183be6d92b648ba7a384aafa097362a00
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   PromisesObjC: b14b1c6b68e306650688599de8a45e49fae81151
-  Realm: cd400dd7e5b5bb5c8ae9842eecd73792369e6ec0
-  RealmSwift: 99a16dbdee5d6dfb3d91d56088a9f8c15c0871d1
-  SDWebImage: 62ae4a18473520c67b79e9724c31a63599cc9423
 
-PODFILE CHECKSUM: 09b9c9e9ea1e975b7efa734aea600d783419a4f6
+PODFILE CHECKSUM: 8750600bdd5e2f51fc89132164621255e7601f02
 
 COCOAPODS: 1.9.3

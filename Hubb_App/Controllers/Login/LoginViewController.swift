@@ -7,12 +7,12 @@
 //
 
 import UIKit
-import FirebaseAuth
-import JGProgressHUD
+import FirebaseAuth 
+//import JGProgressHUD
 
 class LoginViewController: UIViewController {
 
-    private let spinner = JGProgressHUD(style: .dark)
+//    private let spinner = JGProgressHUD(style: .dark)
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -112,7 +112,7 @@ class LoginViewController: UIViewController {
                 return
         }
         
-        spinner.show(in: view)
+//        spinner.show(in: view)
         
         // Firebase Log In
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: {[weak self] authResult, error in
@@ -129,9 +129,10 @@ class LoginViewController: UIViewController {
             UserDefaults.standard.set(uid, forKey: "uid")
             UserDefaults.standard.set(email, forKey: "email")
             
-            DispatchQueue.main.async {
-                strongSelf.spinner.dismiss()
-            }
+            print(uid)
+//            DispatchQueue.main.async {
+//                strongSelf.spinner.dismiss()
+//            }
             
             let user = result.user
             
@@ -140,6 +141,7 @@ class LoginViewController: UIViewController {
                 case .success(let userData):
                     UserDefaults.standard.set("\(userData.lastName)", forKey: "last_name")
                     UserDefaults.standard.set("\(userData.firstName)", forKey: "first_name")
+                    print("did retrieve user")
                     
                 case .failure(let error):
                     print("Failed to read data with error: \(error)")

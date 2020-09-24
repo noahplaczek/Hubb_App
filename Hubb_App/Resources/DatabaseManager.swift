@@ -84,11 +84,11 @@ extension DatabaseManager {
     /// Returns dictionary node at child path
     public func getDataForUser(uid: String, completion: @escaping (Result<ChatAppUser, Error>) -> Void) {
         database.child("users").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            guard let userInfo = snapshot.value as? [String: String],
-                let firstName: String = userInfo["first_name"],
-                let lastName: String = userInfo["last_name"],
-                let email: String = userInfo["email"],
-                let uid: String = userInfo["uid"] else {
+            guard let userInfo = snapshot.value as? [String: Any],
+                let firstName: String = userInfo["first_name"] as? String,
+                let lastName: String = userInfo["last_name"] as? String,
+                let email: String = userInfo["email"] as? String,
+                let uid: String = userInfo["uid"] as? String else {
                     completion(.failure(DatabaseError.failedToFetch))
                     return
             }
