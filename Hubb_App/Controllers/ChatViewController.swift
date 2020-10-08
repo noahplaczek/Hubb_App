@@ -59,6 +59,7 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDisplayDelegate = self
 //        messagesCollectionView.messageCellDelegate = self // ImageViewer
         messageInputBar.delegate = self
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
     
 //    private func notFavorited() {

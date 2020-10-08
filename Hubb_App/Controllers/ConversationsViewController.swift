@@ -53,7 +53,6 @@ class ConversationsViewController: UIViewController {
         navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationController?.navigationBar.tintColor = UIColor.white
-        
         navigationController?.navigationBar.topItem?.titleView = searchBar
         searchBar.delegate = self
         

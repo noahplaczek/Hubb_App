@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="sIy-do-Lpe">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="sIy-do-Lpe">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Chats-->
+        <!--Community-->
         <scene sceneID="KVc-09-yFU">
             <objects>
                 <navigationController id="RJF-Ga-blO" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Chats" image="message" catalog="system" id="TGD-vw-EG2"/>
+                    <tabBarItem key="tabBarItem" title="Community" image="house.fill" catalog="system" id="TGD-vw-EG2"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Mtk-6A-I5C">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -31,8 +33,8 @@
                     <view key="view" contentMode="scaleToFill" id="GfB-5O-vLy">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="gXZ-ae-92E"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" title="My Conversations" id="sWP-md-7In"/>
                 </viewController>
@@ -47,8 +49,8 @@
                     <view key="view" contentMode="scaleToFill" id="vhW-TF-yxv">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="v2z-Mk-zzX"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" id="ScE-Ay-K25"/>
                 </viewController>
@@ -63,8 +65,8 @@
                     <view key="view" contentMode="scaleToFill" id="5jV-nu-8SU">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="YAc-LC-mXw"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" title="Profile" id="gyL-un-dlf"/>
                 </viewController>
@@ -108,11 +110,11 @@
             </objects>
             <point key="canvasLocation" x="243" y="1031"/>
         </scene>
-        <!--Explore-->
+        <!--Favorites-->
         <scene sceneID="ZKp-mS-K7O">
             <objects>
                 <navigationController id="d7M-E2-jab" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Explore" image="magnifyingglass" catalog="system" id="Mz6-n0-9gb"/>
+                    <tabBarItem key="tabBarItem" title="Favorites" image="star" catalog="system" id="Mz6-n0-9gb"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="xPB-fY-FHR">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -127,8 +129,11 @@
         </scene>
     </scenes>
     <resources>
-        <image name="magnifyingglass" catalog="system" width="128" height="115"/>
-        <image name="message" catalog="system" width="128" height="113"/>
+        <image name="house.fill" catalog="system" width="128" height="106"/>
         <image name="person.circle" catalog="system" width="128" height="121"/>
+        <image name="star" catalog="system" width="128" height="116"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>
