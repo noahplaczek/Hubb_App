@@ -16,7 +16,7 @@ class ChatViewController: MessagesViewController {
     private let groupDescription: String
     private var groupId: String?
     
-    private var joinedGroup = false
+    private var firstChatLoad = true
     
     private var messages = [Message]()
     
@@ -57,9 +57,17 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
-//        messagesCollectionView.messageCellDelegate = self // ImageViewer
         messageInputBar.delegate = self
         navigationController?.navigationBar.prefersLargeTitles = true
+        
+        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
+            layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
+            layout.textMessageSizeCalculator.incomingAvatarSize = .zero
+            layout.emojiMessageSizeCalculator.outgoingAvatarSize = .zero
+            layout.emojiMessageSizeCalculator.incomingAvatarSize = .zero
+            layout.textMessageSizeCalculator.incomingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 0)
+            layout.textMessageSizeCalculator.outgoingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)
+        }
     }
     
 //    private func notFavorited() {
@@ -105,21 +113,34 @@ class ChatViewController: MessagesViewController {
     
     private func listenForMessages(id: String) {
         
-        var shouldScrollToBottom = true
-        
         DatabaseManager.shared.getAllMessagesForConversation(with: id, completion: { [weak self] result in
             switch result {
             case .success(let messages):
-                guard !messages.isEmpty else {
+                guard !messages.isEmpty
+                      else {
                     return
                 }
+                
+                
                 self?.messages = messages
                 DispatchQueue.main.async {
-                // if user has scrolled to the top and a new message comes in, this wont scroll to bottom
-                        self?.messagesCollectionView.reloadDataAndKeepOffset()
-                    if shouldScrollToBottom {
-                        self?.messagesCollectionView.scrollToLastItem()
-                        shouldScrollToBottom = false
+
+                    self?.messagesCollectionView.reloadDataAndKeepOffset()
+                    
+                    guard let currentMessages = self?.messagesCollectionView.indexPathsForVisibleItems,
+                          let lastMessage = self?.messagesCollectionView.indexPathForLastItem,
+                          let firstChatLoad = self?.firstChatLoad else {
+                        return
+                    }
+                    
+                    if(firstChatLoad) {
+                        self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
+                        self?.firstChatLoad = false
+                        print("fuck")
+                    }
+        
+                    if currentMessages.contains(lastMessage) {self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
+                                                                                                            print("false")
                     }
                 }
             case .failure(let error):

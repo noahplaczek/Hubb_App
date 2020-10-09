@@ -8,7 +8,7 @@
 
 import UIKit
 
-class NewConversationViewController: UIViewController {
+class NewConversationViewController: UIViewController, UITextViewDelegate {
     
     public var completion: ((Group) -> (Void))?
 
@@ -18,20 +18,62 @@ class NewConversationViewController: UIViewController {
         return scrollView
     }()
     
-    private let groupNameField: UITextField = {
-        let field = UITextField()
+    private let groupNameLabel: UILabel = {
+       let label = UILabel()
+        label.text = "Chat Name"
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 22, weight: .medium)
+        return label
+    }()
+    
+    var placeholder = ""
+    
+    private let groupNameField: UITextView = {
+        let field = UITextView()
         field.autocapitalizationType = .none
         field.autocorrectionType = .default
         field.returnKeyType = .continue
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Group Name..."
-        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
-        field.leftViewMode = .always
+        field.text = "80 Characters Max"
+        field.font = .systemFont(ofSize: 16)
+        field.textColor = UIColor.lightGray
         field.backgroundColor = .secondarySystemBackground
         return field
     }()
+    
+    private let countingLabel: UILabel = {
+       let label = UILabel()
+        label.text = "60"
+        return label
+    }()
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.textColor == .lightGray {
+            textView.text = nil
+            textView.textColor = .black
+        }
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text.isEmpty {
+            textView.text = "80 Characters Max"
+            textView.textColor = UIColor.lightGray
+            placeholder = ""
+        } else {
+            placeholder = textView.text
+        }
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        placeholder = textView.text
+        countingLabel.text = "\(60 - textView.text.count)/80"
+    }
+
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+    return textView.text.count + (text.count - range.length) <= 60
+    }
     
     private let groupDescriptionField: UITextField = {
         let field = UITextField()
@@ -59,7 +101,9 @@ class NewConversationViewController: UIViewController {
         groupDescriptionField.delegate = self
      
         view.addSubview(scrollView)
+        scrollView.addSubview(groupNameLabel)
         scrollView.addSubview(groupNameField)
+        scrollView.addSubview(countingLabel)
         scrollView.addSubview(groupDescriptionField)
     }
     
@@ -68,15 +112,20 @@ class NewConversationViewController: UIViewController {
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
         
-        groupNameField.frame = CGRect(x: 30,
+        groupNameLabel.frame = CGRect(x: 30,
                                   y: (scrollView.width - size) / 2,
                                   width: scrollView.width-60,
-                                  height: 52) // generally accepted standard
+                                  height: 30) // generally accepted standard
         
-        groupDescriptionField.frame = CGRect(x: 30,
+        groupNameField.frame = CGRect(x: 30,
+                                  y: groupNameLabel.bottom+10,
+                                  width: scrollView.width-60,
+                                  height: 80)
+        
+        countingLabel.frame = CGRect(x: 30,
                                   y: groupNameField.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 52)
+                                  height: 80)
     }
     
     @objc private func dismissSelf() {
@@ -145,4 +194,21 @@ extension NewConversationViewController: UITextFieldDelegate {
 }
 
 
+class TextFieldWithPadding: UITextField {
+    var textPadding = UIEdgeInsets(
+        top: 10,
+        left: 10,
+        bottom: 10,
+        right: 10
+    )
 
+    override func textRect(forBounds bounds: CGRect) -> CGRect {
+        let rect = super.textRect(forBounds: bounds)
+        return rect.inset(by: textPadding)
+    }
+
+    override func editingRect(forBounds bounds: CGRect) -> CGRect {
+        let rect = super.editingRect(forBounds: bounds)
+        return rect.inset(by: textPadding)
+    }
+}
