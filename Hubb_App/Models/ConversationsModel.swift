@@ -11,7 +11,7 @@ import Foundation
 struct Group {
     let id: String?
     let name: String
-    let description: String
+    let date: String
     let creator: String
     let latestMessage: LatestMessage?
 }
@@ -19,5 +19,6 @@ struct Group {
 struct LatestMessage {
     let date: String
     let text: String
+    let senderName: String
     let isRead: Bool
 }

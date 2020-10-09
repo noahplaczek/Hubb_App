@@ -3,34 +3,34 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>163200682158-qk3b65avueib6jipgrb1hrmkc0j4kc4d.apps.googleusercontent.com</string>
+	<string>192118080171-ls3l77i1qg3m3vujhccrqv7jhgupag5m.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.163200682158-qk3b65avueib6jipgrb1hrmkc0j4kc4d</string>
+	<string>com.googleusercontent.apps.192118080171-ls3l77i1qg3m3vujhccrqv7jhgupag5m</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDRxq_UtYsP1m3H1AfaJhL-jV372svB53I</string>
+	<string>AIzaSyBBWH_AokyLikyUEvGYsqg3cZFvFKvML_E</string>
 	<key>GCM_SENDER_ID</key>
-	<string>163200682158</string>
+	<string>192118080171</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.Hubb.Hubb-App</string>
 	<key>PROJECT_ID</key>
-	<string>hubb-49421</string>
+	<string>hubb-47979</string>
 	<key>STORAGE_BUCKET</key>
-	<string>hubb-49421.appspot.com</string>
+	<string>hubb-47979.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:163200682158:ios:ff6e9bcc574bef8296053f</string>
+	<string>1:192118080171:ios:e9313529bb7ffe8e16edee</string>
 	<key>DATABASE_URL</key>
-	<string>https://hubb-49421.firebaseio.com</string>
+	<string>https://hubb-47979.firebaseio.com</string>
 </dict>
 </plist>

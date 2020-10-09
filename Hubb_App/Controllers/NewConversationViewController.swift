@@ -36,7 +36,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.text = "80 Characters Max"
+        field.text = "60 Characters Max"
         field.font = .systemFont(ofSize: 16)
         field.textColor = UIColor.lightGray
         field.backgroundColor = .secondarySystemBackground
@@ -58,37 +58,34 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView.text.isEmpty {
-            textView.text = "80 Characters Max"
+            textView.text = "60 Characters Max"
             textView.textColor = UIColor.lightGray
-            placeholder = ""
-        } else {
-            placeholder = textView.text
         }
     }
     
     func textViewDidChange(_ textView: UITextView) {
         placeholder = textView.text
-        countingLabel.text = "\(60 - textView.text.count)/80"
+        countingLabel.text = "\(60 - textView.text.count)/60"
     }
 
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
     return textView.text.count + (text.count - range.length) <= 60
     }
     
-    private let groupDescriptionField: UITextField = {
-        let field = UITextField()
-        field.autocapitalizationType = .none
-        field.autocorrectionType = .default
-        field.returnKeyType = .done
-        field.layer.cornerRadius = 12
-        field.layer.borderWidth = 1
-        field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Group Description (100 Characters)..."
-        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
-        field.leftViewMode = .always
-        field.backgroundColor = .secondarySystemBackground
-        return field
-    }()
+//    private let groupDescriptionField: UITextField = {
+//        let field = UITextField()
+//        field.autocapitalizationType = .none
+//        field.autocorrectionType = .default
+//        field.returnKeyType = .done
+//        field.layer.cornerRadius = 12
+//        field.layer.borderWidth = 1
+//        field.layer.borderColor = UIColor.lightGray.cgColor
+//        field.placeholder = "Group Description (60 Characters)..."
+//        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
+//        field.leftViewMode = .always
+//        field.backgroundColor = .secondarySystemBackground
+//        return field
+//    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,13 +95,13 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(createGroup))
         
         groupNameField.delegate = self
-        groupDescriptionField.delegate = self
+//        groupDescriptionField.delegate = self
      
         view.addSubview(scrollView)
         scrollView.addSubview(groupNameLabel)
         scrollView.addSubview(groupNameField)
         scrollView.addSubview(countingLabel)
-        scrollView.addSubview(groupDescriptionField)
+//        scrollView.addSubview(groupDescriptionField)
     }
     
     override func viewDidLayoutSubviews() {
@@ -135,12 +132,14 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     @objc private func createGroup() {
         
         groupNameField.resignFirstResponder()
-        groupDescriptionField.resignFirstResponder()
+//        groupDescriptionField.resignFirstResponder()
 
         guard
             let groupName = groupNameField.text,
-            let groupDescription = groupDescriptionField.text,
-            !groupName.isEmpty, !groupDescription.isEmpty else {
+//            let groupDescription = groupDescriptionField.text,
+            !groupName.isEmpty
+//            !groupDescription.isEmpty
+        else {
                 groupCreationError(message: "Please enter both Group Name and Group Description")
                 return
         }
@@ -148,7 +147,12 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
             return
         }
 
-        let newGroup = Group(id: nil, name: groupName, description: groupDescription, creator: groupCreatorUid, latestMessage: nil)
+        let date = Date()
+        let format = DateFormatter()
+        format.dateFormat = "MM-dd-yyyy"
+        let formattedDate = format.string(from: date)
+        
+        let newGroup = Group(id: nil, name: groupName, date: formattedDate, creator: groupCreatorUid, latestMessage: nil)
 
         DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self]  result in
             guard let strongSelf = self else {
@@ -183,9 +187,6 @@ extension NewConversationViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 
         if textField == groupNameField {
-            groupDescriptionField.becomeFirstResponder()
-        }
-        else if textField == groupDescriptionField {
             createGroup()
         }
 

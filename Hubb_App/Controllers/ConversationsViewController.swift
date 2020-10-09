@@ -40,7 +40,7 @@ class ConversationsViewController: UIViewController {
     
     private var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Search for Groups..."
+        searchBar.placeholder = "Search for Chats..."
         return searchBar
     }()
     
@@ -176,7 +176,7 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 120
+        return 110
     }
     
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {

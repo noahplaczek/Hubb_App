@@ -14,7 +14,7 @@ class ConversationTableViewCell: UITableViewCell {
     static let identifier = "ConversationTableViewCell"
     
     
-    // EDIT - probably don't need image for convo
+    // EDIT - Will add user images based on feedback
 //    private let userImageView: UIImageView = {
 //        let imageView = UIImageView()
 //        imageView.contentMode = .scaleAspectFill
@@ -25,16 +25,23 @@ class ConversationTableViewCell: UITableViewCell {
     
     private let groupNameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 21, weight: .semibold)
+        label.font = .systemFont(ofSize: 20, weight: .semibold)
         label.numberOfLines = 2
  //       label.lineBreakMode = .byWordWrapping
         return label
     }()
     
-    private let groupDescriptionLabel: UILabel = {
+    private let latestMessageLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .regular)
         label.textColor = ConversationsViewController.myColor
+        return label
+    }()
+    
+    private let dateLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.textColor = .lightGray
         return label
     }()
 
@@ -42,7 +49,8 @@ class ConversationTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 //        contentView.addSubview(userImageView)
         contentView.addSubview(groupNameLabel)
-        contentView.addSubview(groupDescriptionLabel)
+        contentView.addSubview(latestMessageLabel)
+        contentView.addSubview(dateLabel)
     }
     
     required init?(coder: NSCoder) {
@@ -58,23 +66,39 @@ class ConversationTableViewCell: UITableViewCell {
 //                                     width: 100,
 //                                     height: 100)
         
-        groupNameLabel.frame = CGRect(x: //userImageView.right+
-                                        20,
+        groupNameLabel.frame = CGRect(x: 20,
                                      y: 10,
-                                     width: contentView.width - 20,//(- userImageView.width) // buffer of 20
+                                     width: contentView.width - 120,
                                      height: (contentView.height)/2)
         
-        groupDescriptionLabel.frame = CGRect(x: //userImageView.right+
-                                            20,
+        latestMessageLabel.frame = CGRect(x: 20,
                                         y: groupNameLabel.bottom + 10,
-                                        width: contentView.width - 20,// - userImageView.width,
+                                        width: contentView.width - 120,
                                         height: (contentView.height - 20)/2)
-
+        
+        dateLabel.frame = CGRect(x: contentView.width - 95,
+                                        y: 20,
+                                        width: 90,
+                                        height: 20)
+        
     }
     
     public func configure(with model: Group) {
-        groupDescriptionLabel.text = model.latestMessage?.text
         groupNameLabel.text = model.name
+        dateLabel.text = model.date
+        
+        guard let latestMessage = model.latestMessage else {
+            return
+        }
+        
+        if latestMessage.text == "New Group" {
+            latestMessageLabel.text = "New Group"
+        }
+        else {
+            latestMessageLabel.text = latestMessage.senderName + ": " + latestMessage.text
+        }
+
+        
     }
   
 }

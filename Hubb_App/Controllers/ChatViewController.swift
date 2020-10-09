@@ -13,7 +13,7 @@ import InputBarAccessoryView
 class ChatViewController: MessagesViewController {
     
     private let groupName: String
-    private let groupDescription: String
+//    private let groupDescription: String
     private var groupId: String?
     
     private var firstChatLoad = true
@@ -42,7 +42,7 @@ class ChatViewController: MessagesViewController {
     
     init(group: Group) {
         self.groupName = group.name
-        self.groupDescription = group.description
+//        self.groupDescription = group.description
         self.groupId = group.id
         super.init(nibName: nil, bundle: nil)
     }
@@ -121,7 +121,6 @@ class ChatViewController: MessagesViewController {
                     return
                 }
                 
-                
                 self?.messages = messages
                 DispatchQueue.main.async {
 
@@ -136,12 +135,9 @@ class ChatViewController: MessagesViewController {
                     if(firstChatLoad) {
                         self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
                         self?.firstChatLoad = false
-                        print("fuck")
                     }
         
-                    if currentMessages.contains(lastMessage) {self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
-                                                                                                            print("false")
-                    }
+                    if currentMessages.contains(lastMessage) {self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)}
                 }
             case .failure(let error):
                 print("failed to get messages: \(error)")

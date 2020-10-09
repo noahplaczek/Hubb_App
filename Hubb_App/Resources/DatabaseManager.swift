@@ -108,31 +108,32 @@ extension DatabaseManager {
     public func createNewConversation(group: Group, completion: @escaping (Result<Group, Error>) -> Void) {
         let newGroupReference = database.child("group_detail").childByAutoId()
 
-        guard let groupId = newGroupReference.key else {
+        guard let groupId = newGroupReference.key,
+              let senderName = UserDefaults.standard.value(forKey: "first_name") as? String else {
             completion(.failure(DatabaseError.failedToCreateGroup))
             return
         }
         let dateString = ChatViewController.dateFormatter.string(from: Date())
-
+        
         let newGroup: [String: Any] = [
             "group_id": groupId,
             "name": group.name,
-            "description": group.description,
+            "date": group.date,
             "creator_uid": group.creator,
             "members": [
                 group.creator
             ],
             "last_message": [
                 "date": dateString,
-                "text": group.description,
-                "is_read": false
+                "text": "New Group",
+                "is_read": false,
+                "sender_name": senderName
             ]
         ]
         
         // Update Group Details with new group info
         newGroupReference.setValue(newGroup, withCompletionBlock: { [weak self] error, _ in
             guard error == nil,
-                let senderName = UserDefaults.standard.value(forKey: "first_name") as? String,
                 let strongSelf = self else {
                     completion(.failure(DatabaseError.failedToCreateGroup))
                     return
@@ -147,7 +148,7 @@ extension DatabaseManager {
             }
             
             let firstMessage: [String: Any] = [
-                "content": group.description,
+                "content": group.name,
                 // EDIT: will not just be text when photos are introduced
                 "type": "text",
                 "sender_uid": group.creator,
@@ -189,9 +190,9 @@ extension DatabaseManager {
                             return
                         }
                         
-                        let latestMessage = LatestMessage(date: dateString, text: group.description, isRead: false)
+                        let latestMessage = LatestMessage(date: dateString, text: group.name, senderName: senderName, isRead: false)
                         
-                        let newGroupInfo = Group(id: groupId, name: group.name, description: group.description, creator: group.creator, latestMessage: latestMessage)
+                        let newGroupInfo = Group(id: groupId, name: group.name, date: group.date, creator: group.creator, latestMessage: latestMessage)
                         
                         completion(.success(newGroupInfo))
                     })
@@ -255,21 +256,24 @@ extension DatabaseManager {
             
             var groups = [Group]()
             
+            print(snapshot.children.allObjects)
+            
             for children in snapshot.children.allObjects as! [DataSnapshot] {
                 guard let currentGroupInfo = children.value as? [String: Any],
                     let groupId = currentGroupInfo["group_id"] as? String,
                     let name = currentGroupInfo["name"] as? String,
                     let creatorUid = currentGroupInfo["creator_uid"] as? String,
-                    let description = currentGroupInfo["description"] as? String,
+                    let creationDate = currentGroupInfo["date"] as? String,
                     let latestMessage = currentGroupInfo["last_message"] as? [String: Any],
                     let date = latestMessage["date"] as? String,
                     let message = latestMessage["text"] as? String,
+                    let senderName = latestMessage["sender_name"] as? String,
                     let isRead = latestMessage["is_read"] as? Bool else {
                         return
                 }
                 
-                let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
-                let currentGroup = Group(id: groupId, name: name, description: description, creator: creatorUid, latestMessage: latestMessageObject)
+                let latestMessageObject = LatestMessage(date: date, text: message, senderName: senderName, isRead: isRead)
+                let currentGroup = Group(id: groupId, name: name, date: creationDate, creator: creatorUid, latestMessage: latestMessageObject)
                 
                 groups.insert(currentGroup, at: 0)
             }
@@ -312,7 +316,8 @@ extension DatabaseManager {
             let lastMessage: [String: Any] = [
                 "date": dateString,
                 "is_read": false,
-                "text": messageText
+                "text": messageText,
+                "sender_name": sender.displayName
             ]
             
             self?.database.child("group_detail/\(groupId)/last_message").setValue(lastMessage, withCompletionBlock: { error, _ in
