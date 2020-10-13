@@ -49,7 +49,7 @@ class ConversationsViewController: UIViewController {
         
         validateAuth()
         view.addSubview(tableView)
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .white
         navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationController?.navigationBar.tintColor = UIColor.white
@@ -63,6 +63,9 @@ class ConversationsViewController: UIViewController {
         
         setupTableView()
         startListeningForConversations()
+        
+        tableView.estimatedRowHeight = 85.0
+        tableView.rowHeight = UITableView.automaticDimension
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -135,7 +138,6 @@ class ConversationsViewController: UIViewController {
                 return
             }
             let vc = ChatViewController(group: group)
-            vc.title = group.name
             vc.navigationItem.largeTitleDisplayMode = .never
             strongSelf.navigationController?.pushViewController(vc, animated: true)
         }
@@ -157,7 +159,7 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
         let cell = tableView.dequeueReusableCell(withIdentifier: ConversationTableViewCell.identifier,
                                                  for: indexPath) as! ConversationTableViewCell
         cell.configure(with: model)
-        
+        print(numberOfLines(name: groups[indexPath.row].name))
         return cell
     }
     
@@ -176,11 +178,26 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 110
+        if groups[indexPath.row].name.count > 25 {return 110}
+        else {return 90}
     }
     
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        return .delete
+    func numberOfLines(name: String) -> Int {
+        let groupNameLabel: UILabel = {
+            let label = UILabel()
+            label.font = UIFont.preferredFont(forTextStyle: .headline)
+            label.numberOfLines = 2
+     //       label.lineBreakMode = .byWordWrapping
+            return label
+        }()
+        return lines(label: groupNameLabel)
+    }
+    func lines(label: UILabel) -> Int {
+        let textSize = CGSize(width: view.width-120, height: CGFloat(Float.infinity))
+        let rHeight = lroundf(Float(label.sizeThatFits(textSize).height))
+        let charSize = lroundf(Float(label.font.lineHeight))
+        let lineCount = rHeight/charSize
+        return lineCount
     }
     
 }

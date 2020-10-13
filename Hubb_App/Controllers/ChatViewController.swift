@@ -38,8 +38,6 @@ class ChatViewController: MessagesViewController {
                displayName: displayName)
     }
     
-
-    
     init(group: Group) {
         self.groupName = group.name
 //        self.groupDescription = group.description
@@ -51,14 +49,31 @@ class ChatViewController: MessagesViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    private let multilineNavBar: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.numberOfLines = 2
+        label.font = UIFont.boldSystemFont(ofSize: 16.0)
+        label.textAlignment = .center
+        label.textColor = .white
+        return label
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "       ", style: .done, target: nil, action: nil)
+                
+        self.navigationItem.titleView = multilineNavBar
+        multilineNavBar.text = self.groupName
+        
+        
+        
+        
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
         messageInputBar.delegate = self
-        navigationController?.navigationBar.prefersLargeTitles = true
         
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
@@ -68,6 +83,10 @@ class ChatViewController: MessagesViewController {
             layout.textMessageSizeCalculator.incomingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 0)
             layout.textMessageSizeCalculator.outgoingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)
         }
+    }
+    
+    @objc func didTapComposeButton() {
+        
     }
     
 //    private func notFavorited() {

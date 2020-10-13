@@ -22,7 +22,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
        let label = UILabel()
         label.text = "Chat Name"
         label.textColor = .black
-        label.font = .systemFont(ofSize: 22, weight: .medium)
+        label.font = .systemFont(ofSize: 24, weight: .bold)
         return label
     }()
     
@@ -37,15 +37,16 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
         field.text = "60 Characters Max"
-        field.font = .systemFont(ofSize: 16)
+        field.font = .systemFont(ofSize: 20)
         field.textColor = UIColor.lightGray
-        field.backgroundColor = .secondarySystemBackground
+        field.backgroundColor = .white
         return field
     }()
     
     private let countingLabel: UILabel = {
        let label = UILabel()
-        label.text = "60"
+        label.text = "60/60"
+        label.font = .systemFont(ofSize: 16)
         return label
     }()
     
@@ -89,7 +90,11 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .white
+        
+        navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.tintColor = UIColor.white
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(dismissSelf))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(createGroup))
@@ -109,20 +114,22 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
         
-        groupNameLabel.frame = CGRect(x: 30,
+        groupNameLabel.frame = CGRect(x: 35,
                                   y: (scrollView.width - size) / 2,
                                   width: scrollView.width-60,
-                                  height: 30) // generally accepted standard
+                                  height: 20) 
         
         groupNameField.frame = CGRect(x: 30,
                                   y: groupNameLabel.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 80)
+                                  height: 65)
         
-        countingLabel.frame = CGRect(x: 30,
-                                  y: groupNameField.bottom+10,
-                                  width: scrollView.width-60,
-                                  height: 80)
+        countingLabel.frame = CGRect(x: scrollView.width-80,
+                                  y: groupNameField.bottom+5,
+                                  width: 60,
+                                  height: 15)
+
+        
     }
     
     @objc private func dismissSelf() {

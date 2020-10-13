@@ -25,7 +25,7 @@ class ConversationTableViewCell: UITableViewCell {
     
     private let groupNameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 20, weight: .semibold)
+        label.font = UIFont.preferredFont(forTextStyle: .headline)
         label.numberOfLines = 2
  //       label.lineBreakMode = .byWordWrapping
         return label
@@ -33,14 +33,14 @@ class ConversationTableViewCell: UITableViewCell {
     
     private let latestMessageLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
         label.textColor = ConversationsViewController.myColor
         return label
     }()
     
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.font = UIFont.preferredFont(forTextStyle: .caption1)
         label.textColor = .lightGray
         return label
     }()
@@ -67,7 +67,7 @@ class ConversationTableViewCell: UITableViewCell {
 //                                     height: 100)
         
         groupNameLabel.frame = CGRect(x: 20,
-                                     y: 10,
+                                     y: 5,
                                      width: contentView.width - 120,
                                      height: (contentView.height)/2)
         
@@ -76,8 +76,8 @@ class ConversationTableViewCell: UITableViewCell {
                                         width: contentView.width - 120,
                                         height: (contentView.height - 20)/2)
         
-        dateLabel.frame = CGRect(x: contentView.width - 95,
-                                        y: 20,
+        dateLabel.frame = CGRect(x: contentView.width - 85,
+                                        y: 15,
                                         width: 90,
                                         height: 20)
         

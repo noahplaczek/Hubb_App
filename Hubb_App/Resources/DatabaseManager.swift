@@ -255,9 +255,7 @@ extension DatabaseManager {
             }
             
             var groups = [Group]()
-            
-            print(snapshot.children.allObjects)
-            
+                        
             for children in snapshot.children.allObjects as! [DataSnapshot] {
                 guard let currentGroupInfo = children.value as? [String: Any],
                     let groupId = currentGroupInfo["group_id"] as? String,
