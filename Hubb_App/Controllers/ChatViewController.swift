@@ -10,7 +10,7 @@ import UIKit
 import MessageKit
 import InputBarAccessoryView
 
-class ChatViewController: MessagesViewController {
+class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     private let groupName: String
 //    private let groupDescription: String
@@ -62,8 +62,12 @@ class ChatViewController: MessagesViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "       ", style: .done, target: nil, action: nil)
-                
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "ellipsis"), for: .normal)
+        button.addTarget(self, action: #selector(didTapActionButton), for: .touchUpInside)
+        let barButton = UIBarButtonItem(customView: button)
+        self.navigationItem.rightBarButtonItem = barButton
+        
         self.navigationItem.titleView = multilineNavBar
         multilineNavBar.text = self.groupName
         
@@ -73,6 +77,7 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
+        messagesCollectionView.messageCellDelegate = self
         messageInputBar.delegate = self
         
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
@@ -85,8 +90,34 @@ class ChatViewController: MessagesViewController {
         }
     }
     
-    @objc func didTapComposeButton() {
+    @objc func didTapActionButton() {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
+        actionSheet.addAction(UIAlertAction(title: "Report Group", style: .destructive, handler: { [weak self] _ in
+            guard let groupId = self?.groupId else {
+                return
+            }
+            let vc = ReportContentViewController(groupID: groupId, userID: "")
+            
+            
+            vc.completion = { [weak self] bool in
+                guard let strongSelf = self else {
+                    return 
+                }
+                print(bool)
+                if bool == true {
+                    strongSelf.navigationController?.popViewController(animated: true)
+                }
+            }
+            
+            let navVC = UINavigationController(rootViewController: vc)
+            self?.present(navVC, animated: true)
+        
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(actionSheet, animated: true)
     }
     
 //    private func notFavorited() {
@@ -226,5 +257,34 @@ extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, Messa
         }
         return .secondarySystemBackground
     }
+    
+    func didTapMessageTopLabel(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              let currentUserId = UserDefaults.standard.value(forKey: "uid") as? String else {
+            return
+        }
+        let message = messages[indexPath.section]
+        let senderId = message.sender.senderId
+        
+        if senderId != currentUserId {
+        
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Report User", style: .destructive, handler: { [weak self] _ in
+
+            let vc = ReportContentViewController(groupID: "", userID: senderId)
+            let navVC = UINavigationController(rootViewController: vc)
+            self?.present(navVC, animated: true)
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(actionSheet, animated: true)
+    }
+        
+        print("Message tapped")
+        
+    }
+    
     
 }

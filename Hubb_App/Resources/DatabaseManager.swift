@@ -120,6 +120,9 @@ extension DatabaseManager {
             "name": group.name,
             "date": group.date,
             "creator_uid": group.creator,
+            "flagged_info": [
+                "total_flagged": 0
+            ],
             "members": [
                 group.creator
             ],
@@ -257,17 +260,24 @@ extension DatabaseManager {
             var groups = [Group]()
                         
             for children in snapshot.children.allObjects as! [DataSnapshot] {
+                
                 guard let currentGroupInfo = children.value as? [String: Any],
                     let groupId = currentGroupInfo["group_id"] as? String,
                     let name = currentGroupInfo["name"] as? String,
                     let creatorUid = currentGroupInfo["creator_uid"] as? String,
                     let creationDate = currentGroupInfo["date"] as? String,
+                    let flaggedInfo = currentGroupInfo["flagged_info"] as? [String: Any],
+                    let totalFlagged = flaggedInfo["total_flagged"] as? Int,
                     let latestMessage = currentGroupInfo["last_message"] as? [String: Any],
                     let date = latestMessage["date"] as? String,
                     let message = latestMessage["text"] as? String,
                     let senderName = latestMessage["sender_name"] as? String,
                     let isRead = latestMessage["is_read"] as? Bool else {
                         return
+                }
+                
+                if totalFlagged > 1 {
+                    continue
                 }
                 
                 let latestMessageObject = LatestMessage(date: date, text: message, senderName: senderName, isRead: isRead)
@@ -329,6 +339,82 @@ extension DatabaseManager {
         })
     }
     
+
+}
+
+// MARK: - Reporting Content
+extension DatabaseManager {
+    /// Insert new user to database
+    public func reportGroup(groupId: String, reason: String, completion: @escaping (Bool) -> Void){
+        
+        database.child("group_detail/\(groupId)/flagged_info").observeSingleEvent(of: .value, with: { [weak self] snapshot in
+            guard let flaggedInfo = snapshot.value as? [String: Any],
+                  let totalFlagged = flaggedInfo["total_flagged"] as? Int else {
+                completion(false)
+                return
+            }
+            let newTotalFlagged = totalFlagged + 1
+            
+            var newFlags: [String]
+            
+            if var currentFlags = flaggedInfo["flagged_reason"] as? [String] {
+                currentFlags.append(reason)
+                newFlags = currentFlags
+            }
+                // Otherwise, create groups for user
+            else {
+                newFlags = [reason]
+            }
+            
+            let newFlaggedInfo: [String: Any] = [
+                "total_flagged": newTotalFlagged,
+                "flagged_reason": newFlags
+            ]
+            
+            self?.database.child("group_detail/\(groupId)/flagged_info").setValue(newFlaggedInfo, withCompletionBlock: { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            })
+            
+        })
+        
+    }
+    
+    public func reportUser(userId: String, reason: String, completion: @escaping (Bool) -> Void){
+        
+        database.child("users/\(userId)").observeSingleEvent(of: .value, with: { [weak self] snapshot in
+            guard let user = snapshot.value as? [String: Any] else {
+                completion(false)
+                return
+            }
+            
+            var newFlags: [String]
+            
+            if var currentFlags = user["flagged_reason"] as? [String] {
+                currentFlags.append(reason)
+                newFlags = currentFlags
+            }
+                // Otherwise, create groups for user
+            else {
+                newFlags = [reason]
+            }
+            
+            let newFlaggedInfo: [String] = newFlags
+    
+            self?.database.child("users/\(userId)/flagged_reason").setValue(newFlaggedInfo, withCompletionBlock: { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            })
+            
+        })
+        
+    }
     /// Fetches and returns all conversations for the user with passed in uid
 //    public func getAllConversationsForUser(for uid: String, completion: @escaping (Result<[Group], Error>) -> Void) {
 //        database.child("users/\(uid)/groups").observe(.value, with: { [weak self] snapshot in

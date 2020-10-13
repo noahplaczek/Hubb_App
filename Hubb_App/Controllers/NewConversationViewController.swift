@@ -147,7 +147,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
             !groupName.isEmpty
 //            !groupDescription.isEmpty
         else {
-                groupCreationError(message: "Please enter both Group Name and Group Description")
+                groupCreationError(message: "Please enter a Chat Name")
                 return
         }
         guard let groupCreatorUid = UserDefaults.standard.value(forKey: "uid") as? String else {

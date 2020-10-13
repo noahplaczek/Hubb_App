@@ -64,8 +64,6 @@ class ConversationsViewController: UIViewController {
         setupTableView()
         startListeningForConversations()
         
-        tableView.estimatedRowHeight = 85.0
-        tableView.rowHeight = UITableView.automaticDimension
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -141,8 +139,7 @@ class ConversationsViewController: UIViewController {
             vc.navigationItem.largeTitleDisplayMode = .never
             strongSelf.navigationController?.pushViewController(vc, animated: true)
         }
-        // EDIT: Presents from the ConversationsView. This is fine unless we create from the Explore View.
-        // Need to better understand Navigation Controller / rootViewController
+        
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
     }

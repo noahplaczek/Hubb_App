@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0603A5FF2530083E00F32ED4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0603A5FE2530083E00F32ED4 /* GoogleService-Info.plist */; };
+		0603A628253539BA00F32ED4 /* ReportContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0603A627253539BA00F32ED4 /* ReportContentViewController.swift */; };
 		068CBC5F250CFFFB00953DB4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC5E250CFFFB00953DB4 /* Extensions.swift */; };
 		068CBC61250D1D6E00953DB4 /* GoogleService-Info1.plist in Resources */ = {isa = PBXBuildFile; fileRef = 068CBC60250D1D6E00953DB4 /* GoogleService-Info1.plist */; };
 		068CBC63250D200100953DB4 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC62250D200100953DB4 /* DatabaseManager.swift */; };
@@ -35,6 +36,7 @@
 
 /* Begin PBXFileReference section */
 		0603A5FE2530083E00F32ED4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		0603A627253539BA00F32ED4 /* ReportContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportContentViewController.swift; sourceTree = "<group>"; };
 		068CBC5E250CFFFB00953DB4 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		068CBC60250D1D6E00953DB4 /* GoogleService-Info1.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info1.plist"; sourceTree = "<group>"; };
 		068CBC62250D200100953DB4 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */,
 				068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */,
 				068CBC6C250D689F00953DB4 /* ChatViewController.swift */,
+				0603A627253539BA00F32ED4 /* ReportContentViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -327,6 +330,7 @@
 				06DE7227250CF6A400AA0CC7 /* ConversationsViewController.swift in Sources */,
 				06DE7223250CF6A400AA0CC7 /* AppDelegate.swift in Sources */,
 				068CBC67250D476300953DB4 /* ConversationTableViewCell.swift in Sources */,
+				0603A628253539BA00F32ED4 /* ReportContentViewController.swift in Sources */,
 				068CBC73250E9EC300953DB4 /* ProfileViewModel.swift in Sources */,
 				06DE7225250CF6A400AA0CC7 /* SceneDelegate.swift in Sources */,
 				06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */,
