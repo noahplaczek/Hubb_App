@@ -146,9 +146,6 @@ class ConversationsViewController: UIViewController {
                                   y: noResultsCreateChat.bottom+20,
                                   width: scrollView.width-60,
                                   height: 52)
-        
-        print("No Results for:".stringWidth)
-        print("Create a Chat!".stringWidth)
     }
     
     private func validateAuth() {

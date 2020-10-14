@@ -20,7 +20,7 @@ class RegisterViewController: UIViewController {
         return scrollView
     }()
     
-    // Will instead use this in Profile Screen
+    // Profile Picture
 //    private let imageView: UIImageView = {
 //        let imageView = UIImageView()
 //        imageView.image = UIImage(systemName: "person.circle")
@@ -31,6 +31,13 @@ class RegisterViewController: UIViewController {
 //        imageView.layer.borderColor = UIColor.lightGray.cgColor
 //        return imageView
 //    }()
+    
+    private let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "Logo")
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     
     private let firstNameField: UITextField = {
         let field = UITextField()
@@ -121,6 +128,7 @@ class RegisterViewController: UIViewController {
         // Add Subviews
         view.addSubview(scrollView)
 //        scrollView.addSubview(imageView)
+        scrollView.addSubview(imageView)
         scrollView.addSubview(firstNameField)
         scrollView.addSubview(lastNameField)
         scrollView.addSubview(emailField)
@@ -142,14 +150,13 @@ class RegisterViewController: UIViewController {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
-//        imageView.frame = CGRect(x: (scrollView.width - size) / 2,
-//                                 y: 20,
-//                                 width: size,
-//                                 height: size)
-//      imageView.layer.cornerRadius = imageView.width / 2.0
-        
+
+        imageView.frame = CGRect(x: (scrollView.width-size)/2,
+                                 y: scrollView.height/8,
+                                 width: size,
+                                 height: size)
         firstNameField.frame = CGRect(x: 30,
-                                  y: (scrollView.width - size) / 2,
+                                  y: imageView.bottom+10,
                                   width: scrollView.width-60,
                                   height: 52) // generally accepted standard
         lastNameField.frame = CGRect(x: 30,
@@ -196,7 +203,7 @@ class RegisterViewController: UIViewController {
                 alertUserLoginError(is: LoginError.emptyField)
                 return
         }
-        if email.hasSuffix("@gmail.com") {
+        if email.hasSuffix("@depaul.edu") {
             
 //            spinner.show(in: view)
             
@@ -212,7 +219,6 @@ class RegisterViewController: UIViewController {
 //                }
                 
                 guard !exists else {
-                    // user already exists
                     self?.alertUserLoginError(is: LoginError.userExists)
                     return
                 }
@@ -226,13 +232,10 @@ class RegisterViewController: UIViewController {
                     
                     let uid = user.uid
                     
-                    // Cache user information
                     UserDefaults.standard.setValue("\(lastName)", forKey: "last_name")
                     UserDefaults.standard.setValue("\(firstName)", forKey: "first_name")
                     UserDefaults.standard.setValue(email, forKey: "email")
                     UserDefaults.standard.setValue(uid, forKey: "uid")
-                    
-                    // Add user to DB
                     
                     let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email, uid: uid)
                     DatabaseManager.shared.insertUser(with: chatUser, completion: { success in

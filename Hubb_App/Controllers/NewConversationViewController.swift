@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class NewConversationViewController: UIViewController, UITextViewDelegate {
     
@@ -48,6 +49,17 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         label.text = "60/60"
         label.font = .systemFont(ofSize: 16)
         return label
+    }()
+    
+    private let createChatButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Create Chat", for: .normal)
+        button.backgroundColor = ConversationsViewController.myColor
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
+        return button
     }()
     
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -98,42 +110,57 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(dismissSelf))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(createGroup))
+        createChatButton.addTarget(self, action: #selector(createGroup),
+                              for: .touchUpInside)
         
         groupNameField.delegate = self
-//        groupDescriptionField.delegate = self
      
         view.addSubview(scrollView)
         scrollView.addSubview(groupNameLabel)
         scrollView.addSubview(groupNameField)
         scrollView.addSubview(countingLabel)
-//        scrollView.addSubview(groupDescriptionField)
+        scrollView.addSubview(createChatButton)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
-        let size = scrollView.width / 3
         
         groupNameLabel.frame = CGRect(x: 35,
-                                  y: (scrollView.width - size) / 2,
+                                  y: (scrollView.height / 4),
                                   width: scrollView.width-60,
                                   height: 20) 
         
         groupNameField.frame = CGRect(x: 30,
                                   y: groupNameLabel.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 65)
+                                  height: 70)
         
         countingLabel.frame = CGRect(x: scrollView.width-80,
                                   y: groupNameField.bottom+5,
                                   width: 60,
                                   height: 15)
-
         
+        createChatButton.frame = CGRect(x: 30,
+                                  y: groupNameField.bottom+40,
+                                  width: scrollView.width-60,
+                                  height: 52)
     }
     
     @objc private func dismissSelf() {
-        dismiss(animated: true, completion: nil)
+//        dismiss(animated: true, completion: nil)
+        
+        do {
+            try FirebaseAuth.Auth.auth().signOut()
+
+            let vc = RegisterViewController()
+            let nav = UINavigationController(rootViewController: vc)
+            nav.modalPresentationStyle = .fullScreen
+            present(nav, animated: true)
+        }
+        catch {
+            print("Failed to log out")
+        }
     }
     
     @objc private func createGroup() {
@@ -144,6 +171,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         guard
             let groupName = groupNameField.text,
 //            let groupDescription = groupDescriptionField.text,
+            groupName != "60 Characters Max",
             !groupName.isEmpty
 //            !groupDescription.isEmpty
         else {

@@ -8,6 +8,7 @@
 
 import Foundation
 import FirebaseDatabase
+import MessageKit
 
 final class DatabaseManager {
     
@@ -227,11 +228,31 @@ extension DatabaseManager {
                     let content = currentMessageInfo["content"] as? String,
                     let messageId = currentMessageInfo["message_id"] as? String,
                     let dateString = currentMessageInfo["date"] as? String,
-                    let _ = currentMessageInfo["type"] as? String,
+                    let type = currentMessageInfo["type"] as? String,
                     let _ = currentMessageInfo["group_id"] as? String,
                     let _ = currentMessageInfo["is_read"] as? Bool,
                     let date = ChatViewController.dateFormatter.date(from: dateString) else {
                         return
+                }
+                
+                var kind: MessageKind?
+                if type == "photo" {
+                    guard let imageUrl = URL(string: content),
+                          let placeHolder = UIImage(systemName: "person") else {
+                        return
+                    }
+                    let media = Media(url: imageUrl,
+                                      image: nil,
+                                      placeholderImage: placeHolder,
+                                      size: CGSize(width: 300, height: 300))
+                    kind = .photo(media)
+                }
+                else {
+                    kind = .text(content)
+                }
+                
+                guard let finalKind = kind else {
+                    return
                 }
                 
                 let sender = Sender(photoURL: "",
@@ -241,7 +262,7 @@ extension DatabaseManager {
                 let currentMessage = Message(sender: sender,
                                          messageId: messageId,
                                          sentDate: date,
-                                         kind: .text(content))
+                                         kind: finalKind)
                 
                 messages.append(currentMessage)
             }
@@ -291,7 +312,7 @@ extension DatabaseManager {
     }
     
     // Sends a message with target conversation and message
-    public func sendMessage(to groupId: String, messageText: String, sender: Sender, completion: @escaping (Bool) -> Void) {
+    public func sendMessage(to groupId: String, newMessage: Message, sender: Sender, completion: @escaping (Bool) -> Void) {
 
         let newMessageReference = database.child("group_messages").child(groupId).childByAutoId()
 
@@ -301,11 +322,40 @@ extension DatabaseManager {
         }
         
         let dateString = ChatViewController.dateFormatter.string(from: Date())
+    
+        var message = ""
+        var type = ""
+        switch newMessage.kind {
+        case .text(let messageText):
+            message = messageText
+            type = "text"
+        case .attributedText(_):
+            break
+        case .photo(let mediaItem):
+            if let targetUrlString = mediaItem.url?.absoluteString {
+                message = targetUrlString
+                type = "photo"
+            }
+            break
+        case .video(_):
+            break
+        case .location(_):
+            break
+        case .emoji(_):
+            break
+        case .audio(_):
+            break
+        case .contact(_):
+            break
+        case .custom(_):
+            break
+        case .linkPreview(_):
+            break
+        }
         
         let newMessage: [String: Any] = [
-            "content": messageText,
-            // EDIT: will not just be text when photos are introduced
-            "type": "text",
+            "content": message,
+            "type": type,
             "sender_uid": sender.senderId,
             "sender_name": sender.displayName,
             "group_id": groupId as Any,
@@ -313,20 +363,23 @@ extension DatabaseManager {
             "is_read": false,
             "message_id": messageId
         ]
-
-        // Update Group Messages using group description as first message text
+        
         newMessageReference.setValue(newMessage, withCompletionBlock: { [weak self] error, _ in
             guard error == nil else {
                 completion(false)
                 return
             }
             
-            let lastMessage: [String: Any] = [
+            var lastMessage: [String: Any] = [
                 "date": dateString,
                 "is_read": false,
-                "text": messageText,
+                "text": message,
                 "sender_name": sender.displayName
             ]
+
+            if type == "photo" {
+                lastMessage["text"] = "Sent a photo"
+            }
             
             self?.database.child("group_detail/\(groupId)/last_message").setValue(lastMessage, withCompletionBlock: { error, _ in
                 guard error == nil else {
@@ -337,7 +390,10 @@ extension DatabaseManager {
                 completion(true)
             })
         })
-    }
+
+   
+}
+
     
 
 }

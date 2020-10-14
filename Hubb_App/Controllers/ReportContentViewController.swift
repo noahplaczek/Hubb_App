@@ -54,6 +54,24 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
         return field
     }()
     
+    private let countingLabel: UILabel = {
+       let label = UILabel()
+        label.text = "400/400"
+        label.font = .systemFont(ofSize: 16)
+        return label
+    }()
+    
+    private let reportButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Report", for: .normal)
+        button.backgroundColor = ConversationsViewController.myColor
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
+        return button
+    }()
+    
     func textViewDidBeginEditing(_ textView: UITextView) {
         if textView.textColor == .lightGray {
             textView.text = nil
@@ -68,6 +86,14 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
         }
     }
     
+    func textViewDidChange(_ textView: UITextView) {
+        countingLabel.text = "\(400 - textView.text.count)/400"
+    }
+
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+    return textView.text.count + (text.count - range.length) <= 400
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -78,30 +104,39 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(dismissSelf))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(reportContent))
+        reportButton.addTarget(self, action: #selector(reportContent),
+                              for: .touchUpInside)
         
         reportContentField.delegate = self
-//        groupDescriptionField.delegate = self
      
         view.addSubview(scrollView)
         scrollView.addSubview(reportContentLabel)
         scrollView.addSubview(reportContentField)
-//        scrollView.addSubview(countingLabel)
+        scrollView.addSubview(countingLabel)
+        scrollView.addSubview(reportButton)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
-        let size = scrollView.width / 3
         
         reportContentLabel.frame = CGRect(x: 35,
-                                  y: (scrollView.width - size) / 2,
+                                  y: (scrollView.height / 4),
                                   width: scrollView.width-60,
-                                  height: 25)
-        
+                                  height: 20)
         reportContentField.frame = CGRect(x: 30,
                                   y: reportContentLabel.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 65)
+                                  height: 70)
+        countingLabel.frame = CGRect(x: scrollView.width-100,
+                                  y: reportContentField.bottom+5,
+                                  width: 80,
+                                  height: 15)
+        reportButton.frame = CGRect(x: 30,
+                                  y: reportContentField.bottom+40,
+                                  width: scrollView.width-60,
+                                  height: 52)
+
         
     }
     
@@ -115,6 +150,7 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
 
         guard
             let reportReason = reportContentField.text,
+            reportReason != "Description of inappropriate content...",
             !reportReason.isEmpty
         else {
                 groupCreationError(message: "Please enter a reason for reporting content")
