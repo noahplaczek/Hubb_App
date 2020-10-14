@@ -35,7 +35,7 @@ class LoginViewController: UIViewController {
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Email Address..."
+        field.placeholder = "School Email..."
         field.backgroundColor = .secondarySystemBackground
         
         // Buffer so text is not flush against the left of the text field
@@ -80,8 +80,6 @@ class LoginViewController: UIViewController {
         title = "Log In"
         view.backgroundColor = .systemBackground
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .done, target: self, action: #selector(didTapRegister))
-        
         loginButton.addTarget(self, action: #selector(loginButtonTapped),
                               for: .touchUpInside)
         
@@ -93,12 +91,6 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginButton)
-    }
-    
-    @objc private func didTapRegister() {
-        let vc = RegisterViewController()
-        vc.title = "Create Account"
-        navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func loginButtonTapped() {

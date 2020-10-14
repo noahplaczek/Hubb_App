@@ -70,7 +70,7 @@ class RegisterViewController: UIViewController {
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Email Address..."
+        field.placeholder = "School Email..."
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
         field.backgroundColor = .secondarySystemBackground
@@ -106,8 +106,10 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Log In"
+        title = "New Account"
         view.backgroundColor = .systemBackground
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Login", style: .done, target: self, action: #selector(didTapLogin))
         
         registerButton.addTarget(self, action: #selector(registerButtonTapped),
                               for: .touchUpInside)
@@ -167,6 +169,12 @@ class RegisterViewController: UIViewController {
                                    width: scrollView.width-60,
                                    height: 52)
         
+    }
+    
+    @objc private func didTapLogin() {
+        let vc = LoginViewController()
+        vc.title = "Create Account"
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func registerButtonTapped() {

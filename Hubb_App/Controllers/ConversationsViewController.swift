@@ -28,14 +28,55 @@ class ConversationsViewController: UIViewController {
         return table
     }()
     
+    private let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.clipsToBounds = true
+        scrollView.isHidden = true
+        return scrollView
+    }()
+    
     private let noResultsLabel: UILabel = {
         let label = UILabel()
-        label.isHidden = true
-        label.text = "No Results"
+        label.isHidden = false
+        label.text = "No Results for:"
         label.textAlignment = .center
-        label.textColor = .green
+        label.textColor = .black
         label.font = .systemFont(ofSize: 21, weight: .medium)
+        label.numberOfLines = 1
         return label
+    }()
+    
+    private let noResultsSearchTerm: UILabel = {
+        let label = UILabel()
+        label.isHidden = false
+        label.text = "Search Term"
+        label.textAlignment = .center
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 21, weight: .medium)
+        label.numberOfLines = 1
+        return label
+    }()
+    
+    private let noResultsCreateChat: UILabel = {
+        let label = UILabel()
+        label.isHidden = false
+        label.text = "Create a Chat!"
+        label.textAlignment = .center
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 21, weight: .medium)
+        label.numberOfLines = 1
+        return label
+    }()
+    
+    private let createChatButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Create Chat", for: .normal)
+        button.backgroundColor = ConversationsViewController.myColor
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
+        return button
     }()
     
     private var searchBar: UISearchBar = {
@@ -61,9 +102,17 @@ class ConversationsViewController: UIViewController {
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
         
+        view.addSubview(scrollView)
+        scrollView.addSubview(noResultsLabel)
+        scrollView.addSubview(noResultsSearchTerm)
+        scrollView.addSubview(noResultsCreateChat)
+        scrollView.addSubview(createChatButton)
+        
+        createChatButton.addTarget(self, action: #selector(didTapComposeButton),
+                              for: .touchUpInside)
+        
         setupTableView()
         startListeningForConversations()
-        
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -77,11 +126,34 @@ class ConversationsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds
+        scrollView.frame = view.bounds
+        let centered = scrollView.width / 3
+        let middle = scrollView.height / 3
+        
+        noResultsLabel.frame = CGRect(x: (scrollView.width - centered) / 2,
+                                  y: (scrollView.height - middle) / 2,
+                                  width: 138,
+                                  height: 50)
+        noResultsSearchTerm.frame = CGRect(x: (scrollView.width - centered) / 2,
+                                  y: noResultsLabel.bottom+10,
+                                  width: 138,
+                                  height: 50)
+        noResultsCreateChat.frame = CGRect(x: (scrollView.width - centered) / 2,
+                                  y: noResultsSearchTerm.bottom+10,
+                                  width: 135,
+                                  height: 50)
+        createChatButton.frame = CGRect(x: 30,
+                                  y: noResultsCreateChat.bottom+20,
+                                  width: scrollView.width-60,
+                                  height: 52)
+        
+        print("No Results for:".stringWidth)
+        print("Create a Chat!".stringWidth)
     }
     
     private func validateAuth() {
         if FirebaseAuth.Auth.auth().currentUser == nil {
-            let vc = LoginViewController()
+            let vc = RegisterViewController()
             let nav = UINavigationController(rootViewController: vc)
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: false)
@@ -100,13 +172,11 @@ class ConversationsViewController: UIViewController {
         DatabaseManager.shared.getAllConversations(completion: { [weak self] result in
             switch result {
             case .success(let allGroups):
-                guard !allGroups.isEmpty else { // if conversation list empty, no need to update table view
-//                    self?.noConversationsLabel.isHidden = false
-                    self?.tableView.isHidden = true
+                guard !allGroups.isEmpty else {
                     return
                 }
-                self?.tableView.isHidden = false
- //               self?.noConversationsLabel.isHidden = true
+//                self?.tableView.isHidden = false
+//                self?.scrollView.isHidden = true
                 
                 if self?.groups.count == self?.allGroups.count {
                     self?.allGroups = allGroups
@@ -121,7 +191,6 @@ class ConversationsViewController: UIViewController {
                 }
 
             case .failure(let error):
-//                self?.noConversationsLabel.isHidden = false
                 self?.tableView.isHidden = true
                 print("failed to get convos: \(error)")
             }
@@ -129,6 +198,10 @@ class ConversationsViewController: UIViewController {
     }
     
     @objc func didTapComposeButton() {
+        
+//        scrollView.isHidden = true
+//        tableView.isHidden = false
+        
         let vc = NewConversationViewController()
         
         vc.completion = { [weak self] group in
@@ -138,10 +211,13 @@ class ConversationsViewController: UIViewController {
             let vc = ChatViewController(group: group)
             vc.navigationItem.largeTitleDisplayMode = .never
             strongSelf.navigationController?.pushViewController(vc, animated: true)
+//
+//            strongSelf.tableView.reloadData()
         }
         
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
+
     }
 
     
@@ -156,7 +232,6 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
         let cell = tableView.dequeueReusableCell(withIdentifier: ConversationTableViewCell.identifier,
                                                  for: indexPath) as! ConversationTableViewCell
         cell.configure(with: model)
-        print(numberOfLines(name: groups[indexPath.row].name))
         return cell
     }
     
@@ -175,7 +250,7 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if groups[indexPath.row].name.count > 25 {return 110}
+        if numberOfLines(name: groups[indexPath.row].name) == 2 {return 120}
         else {return 90}
     }
     
@@ -183,14 +258,18 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
         let groupNameLabel: UILabel = {
             let label = UILabel()
             label.font = UIFont.preferredFont(forTextStyle: .headline)
+            label.text = name
             label.numberOfLines = 2
-     //       label.lineBreakMode = .byWordWrapping
+            label.lineBreakMode = .byWordWrapping
             return label
         }()
         return lines(label: groupNameLabel)
     }
     func lines(label: UILabel) -> Int {
-        let textSize = CGSize(width: view.width-120, height: CGFloat(Float.infinity))
+//        let zone = CGSize(width: scrollView.width - 120, height: CGFloat(MAXFLOAT))
+//        let fittingHeight = Float(label.sizeThatFits(zone).height)
+//        return lroundf(fittingHeight / Float(label.font.lineHeight))
+        let textSize = CGSize(width: view.width - 120, height: CGFloat(Float.infinity))
         let rHeight = lroundf(Float(label.sizeThatFits(textSize).height))
         let charSize = lroundf(Float(label.font.lineHeight))
         let lineCount = rHeight/charSize
@@ -225,17 +304,24 @@ extension ConversationsViewController: UISearchBarDelegate {
         })
         
         self.groups = groups
-        updateUI()
+        updateUI(searchTerm: term)
     }
     
-    func updateUI() {
+    func updateUI(searchTerm: String) {
         if groups.isEmpty {
-            noResultsLabel.isHidden = false
+            var labelWidth = "'\(searchTerm)'".stringWidth
+            labelWidth.round(.up)
+            noResultsSearchTerm.frame = CGRect(x: (scrollView.width - labelWidth) / 2,
+                                      y: noResultsLabel.bottom+10,
+                                      width: labelWidth,
+                                      height: 50)
+            noResultsSearchTerm.text = "'\(searchTerm)'"
+            scrollView.isHidden = false
             tableView.isHidden = true
         } else {
-            noResultsLabel.isHidden = true
+            scrollView.isHidden = true
             tableView.isHidden = false
-            tableView.reloadData() // reloads the tableview to include filtered searches
+            tableView.reloadData()
         }
     }
     
@@ -243,10 +329,18 @@ extension ConversationsViewController: UISearchBarDelegate {
         if searchText == "" {
             print("UISearchBar.text cleared!")
             groups = allGroups
-            noResultsLabel.isHidden = true
+            scrollView.isHidden = true
             tableView.isHidden = false
             tableView.reloadData()
         }
     }
     
+}
+
+extension String {
+    var stringWidth: CGFloat {
+        let constraintRect = CGSize(width: UIScreen.main.bounds.width, height: .greatestFiniteMagnitude)
+        let boundingBox = self.trimmingCharacters(in: .whitespacesAndNewlines).boundingRect(with: constraintRect, options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 20, weight: .bold)], context: nil)
+        return boundingBox.width
+    }
 }
