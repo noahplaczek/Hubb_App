@@ -14,11 +14,9 @@ import SDWebImage
 class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     private let groupName: String
-//    private let groupDescription: String
     private var groupId: String?
-    
+    private var joined: Bool
     private var firstChatLoad = true
-    
     private var messages = [Message]()
     
     public static let dateFormatter: DateFormatter = {
@@ -43,6 +41,7 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
         self.groupName = group.name
 //        self.groupDescription = group.description
         self.groupId = group.id
+        self.joined = group.joined
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -62,6 +61,15 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
+        messagesCollectionView.backgroundColor = .white
+        messageInputBar.backgroundView.backgroundColor = .white
+        
+        messageInputBar.inputTextView.textColor = .black
+            
+//            = NSAttributedString(string: "Password...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+//
+//        messageInputBar.inputTextView.font = UIFont.preferredFont(forTextStyle: .headline)
         
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "ellipsis"), for: .normal)
@@ -254,11 +262,15 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                               sentDate: Date(),
                               kind: .text(text))
         
-        DatabaseManager.shared.sendMessage(to: groupId, newMessage: message, sender: selfSender, completion: { [weak self] success in
+        DatabaseManager.shared.sendMessage(to: groupId, newMessage: message, sender: selfSender, joined: joined, completion: { [weak self] success in
+            guard let strongSelf = self else {
+                return
+            }
             if success {
                 print("message sent")
-                self?.messageInputBar.inputTextView.text = nil
-                self?.messagesCollectionView.scrollToBottom()
+                strongSelf.joined = true
+                strongSelf.messageInputBar.inputTextView.text = nil
+                strongSelf.messagesCollectionView.scrollToBottom()
             } else {
                 print("failed to send")
             }
@@ -302,7 +314,11 @@ extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, Messa
             // our message
             return .link
         }
-        return .secondarySystemBackground
+        return .gray
+    }
+    
+    func textColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
+        .white
     }
     
     func didTapMessageTopLabel(in cell: MessageCollectionViewCell) {
@@ -371,7 +387,11 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
         let fileName = "photo_message_" + safeUserEmail + dateString + ".png"
 
         // Upload image
-        StorageManager.shared.uploadMessagePhoto(with: imageData, fileName: fileName, completion: { result in
+        StorageManager.shared.uploadMessagePhoto(with: imageData, fileName: fileName, completion: { [weak self] result in
+            
+            guard let strongSelf = self else{
+                return
+            }
 
             switch result {
             case .success(let urlString):
@@ -393,10 +413,11 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                                        sentDate: Date(),
                                        kind: .photo(media))
 
-                DatabaseManager.shared.sendMessage(to: groupId, newMessage: message, sender: selfSender, completion: { success in
+                DatabaseManager.shared.sendMessage(to: groupId, newMessage: message, sender: selfSender, joined: strongSelf.joined, completion: { success in
 
                     if success {
                         print("sent photo message")
+                        strongSelf.joined = true
                     }
                     else {
                         print("failed to send photo message")

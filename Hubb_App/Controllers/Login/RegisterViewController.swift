@@ -14,6 +14,8 @@ class RegisterViewController: UIViewController {
     
 //    private let spinner = JGProgressHUD(style: .dark)
     
+    private var isChecked = false
+    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.clipsToBounds = true
@@ -39,33 +41,44 @@ class RegisterViewController: UIViewController {
         return imageView
     }()
     
+    private let sloganLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Where your university comes alive"
+        label.font = .italicSystemFont(ofSize: 20)
+//            .systemFont(ofSize: 20, weight: .semibold)
+        label.textColor = ConversationsViewController.myColor
+        return label
+    }()
+    
     private let firstNameField: UITextField = {
         let field = UITextField()
-        field.autocapitalizationType = .none
+        field.autocapitalizationType = .words
         field.autocorrectionType = .no
         field.returnKeyType = .continue
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
+        field.textColor = UIColor.gray
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "First name..."
+        field.attributedPlaceholder = NSAttributedString(string: "First Name...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .secondarySystemBackground
+        field.backgroundColor = .white
         return field
     }()
     
     private let lastNameField: UITextField = {
         let field = UITextField()
-        field.autocapitalizationType = .none
+        field.autocapitalizationType = .words
         field.autocorrectionType = .no
         field.returnKeyType = .continue
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Last name..."
+        field.textColor = UIColor.gray
+        field.attributedPlaceholder = NSAttributedString(string: "Last Name...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .secondarySystemBackground
+        field.backgroundColor = .white
         return field
     }()
     
@@ -74,13 +87,14 @@ class RegisterViewController: UIViewController {
         field.autocapitalizationType = .none
         field.autocorrectionType = .no
         field.returnKeyType = .continue
+        field.textColor = UIColor.gray
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "School Email..."
+        field.attributedPlaceholder = NSAttributedString(string: "School Email...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .secondarySystemBackground
+        field.backgroundColor = .white
         return field
     }()
     
@@ -91,11 +105,12 @@ class RegisterViewController: UIViewController {
         field.returnKeyType = .done
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
+        field.textColor = UIColor.gray
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Password..."
+        field.attributedPlaceholder = NSAttributedString(string: "Password...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         field.leftViewMode = .always
-        field.backgroundColor = .secondarySystemBackground
+        field.backgroundColor = .white
         field.isSecureTextEntry = true
         return field
     }()
@@ -111,71 +126,141 @@ class RegisterViewController: UIViewController {
         return button
     }()
     
+    private let privacyPolicyLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.gray
+        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.numberOfLines = 2
+        label.text = "By checking this you agree to Hubb's"
+        return label
+    }()
+    
+    private let privacyPolicyButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Privacy Policy", for: .normal)
+        button.backgroundColor = .white
+        button.setTitleColor(.blue, for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        return button
+    }()
+    
+    private let termsButton: UIButton = {
+        let button = UIButton()
+        button.setTitle(" and Terms", for: .normal)
+        button.backgroundColor = .white
+        button.setTitleColor(.blue, for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        return button
+    }()
+    
+    private let checkMark: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "square")
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "New Account"
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .white
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Login", style: .done, target: self, action: #selector(didTapLogin))
         
         registerButton.addTarget(self, action: #selector(registerButtonTapped),
                               for: .touchUpInside)
+        privacyPolicyButton.addTarget(self, action: #selector(didTapPrivacyPolicy),
+                              for: .touchUpInside)
+        termsButton.addTarget(self, action: #selector(didTapTerms),
+                              for: .touchUpInside)
+        let gesture = UITapGestureRecognizer(target: self,
+                                             action: #selector(checkboxTapped))
+        checkMark.addGestureRecognizer(gesture)
+        checkMark.isUserInteractionEnabled = true
+        scrollView.isUserInteractionEnabled = true
         
+        firstNameField.delegate = self
+        lastNameField.delegate = self
         emailField.delegate = self
         passwordField.delegate = self
         
-        
-        // Add Subviews
         view.addSubview(scrollView)
-//        scrollView.addSubview(imageView)
         scrollView.addSubview(imageView)
+        scrollView.addSubview(sloganLabel)
         scrollView.addSubview(firstNameField)
         scrollView.addSubview(lastNameField)
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(registerButton)
-        
-//        imageView.isUserInteractionEnabled = true
-//        scrollView.isUserInteractionEnabled = true
-//
-//        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTapChangeProfilePic))
-//
-//        imageView.addGestureRecognizer(gesture)
+        scrollView.addSubview(checkMark)
+        scrollView.addSubview(privacyPolicyLabel)
+        scrollView.addSubview(privacyPolicyButton)
+        scrollView.addSubview(termsButton)
+        // 896 / XX = 52
+        // 40
     }
-//    @objc private func didTapChangeProfilePic() {
-//        presentPhotoActionSheet()
-//    }
+    
+    @objc private func didTapPrivacyPolicy() {
+        UIApplication.shared.open(NSURL(string:"https://joinhubb.com/privacy-policy/")! as URL)
+    }
+    @objc private func didTapTerms() {
+        UIApplication.shared.open(NSURL(string:"https://joinhubb.com/terms-of-service//")! as URL)
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
-
+        let fieldHeight = scrollView.height / 17
+        
         imageView.frame = CGRect(x: (scrollView.width-size)/2,
-                                 y: scrollView.height/8,
+                                 y: scrollView.height/9,
                                  width: size,
                                  height: size)
+        sloganLabel.frame = CGRect(x: (scrollView.width-301)/2,
+                                   y: imageView.bottom,
+                                   width: 301,
+                                   height: 52)
         firstNameField.frame = CGRect(x: 30,
-                                  y: imageView.bottom+10,
+                                  y: sloganLabel.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 52) // generally accepted standard
+                                  height: fieldHeight) // generally accepted standard
         lastNameField.frame = CGRect(x: 30,
                                   y: firstNameField.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 52) // generally accepted standard
+                                  height: fieldHeight) // generally accepted standard
         emailField.frame = CGRect(x: 30,
                                   y: lastNameField.bottom+10,
                                   width: scrollView.width-60,
-                                  height: 52) // generally accepted standard
+                                  height: fieldHeight) // generally accepted standard
         passwordField.frame = CGRect(x: 30,
                                      y: emailField.bottom+10,
                                      width: scrollView.width-60,
-                                     height: 52)
-        registerButton.frame = CGRect(x: 30,
+                                     height: fieldHeight)
+        privacyPolicyLabel.frame = CGRect(x: 30,
                                    y: passwordField.bottom+10,
+                                   width: 240,
+                                   height: 50)
+        privacyPolicyButton.frame = CGRect(x: 102,
+                                           y: passwordField.bottom+34.5,
+                                   width: 94.75,
+                                   height: 22)
+        termsButton.frame = CGRect(x: 196.75,
+                                   y: passwordField.bottom+34.5,
+                                   width: 80,
+                           height: 22)
+        checkMark.frame = CGRect(x: scrollView.width-60,
+                                   y: passwordField.bottom+20,
+                                   width: 30,
+                                   height: 30)
+        registerButton.frame = CGRect(x: 30,
+                                   y: privacyPolicyLabel.bottom+20,
                                    width: scrollView.width-60,
                                    height: 52)
-        
     }
     
     @objc private func didTapLogin() {
@@ -186,6 +271,8 @@ class RegisterViewController: UIViewController {
     
     @objc private func registerButtonTapped() {
         
+        firstNameField.resignFirstResponder()
+        lastNameField.resignFirstResponder()
         emailField.resignFirstResponder()
         passwordField.resignFirstResponder()
         
@@ -203,7 +290,11 @@ class RegisterViewController: UIViewController {
                 alertUserLoginError(is: LoginError.emptyField)
                 return
         }
-        if email.hasSuffix("@depaul.edu") {
+        if !email.hasSuffix("@depaul.edu") {
+            alertUserLoginError(is: LoginError.notCollegeEmail)
+        }
+        
+        if isChecked {
             
 //            spinner.show(in: view)
             
@@ -226,7 +317,7 @@ class RegisterViewController: UIViewController {
                 FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
                     guard authResult != nil, error == nil,
                     let user = FirebaseAuth.Auth.auth().currentUser else {
-                        print("Error creating user")
+                        self?.alertUserLoginError(is: .userExists)
                         return
                     }
                     
@@ -243,12 +334,27 @@ class RegisterViewController: UIViewController {
                             print("User successfully added to database")
                         }
                         else {
-                            self?.alertUserLoginError(is: LoginError.notCollegeEmail)
+                            print("Error adding user to database")
                         }
                     })
                     strongSelf.navigationController?.dismiss(animated: true, completion: nil)
                 })
             })
+        }
+        
+        else {
+            alertUserLoginError(is: .termsNotChecked)
+        }
+    }
+    
+    @objc func checkboxTapped() {
+        if isChecked == false {
+            checkMark.image = UIImage(systemName: "checkmark.square")
+            isChecked = true
+        }
+        else {
+            checkMark.image = UIImage(systemName: "square")
+            isChecked = false
         }
     }
         
@@ -256,13 +362,17 @@ class RegisterViewController: UIViewController {
             let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
             switch error {
             case .emptyField:
-                alert.title = "Whoops!"
+                alert.title = "Missing Data"
                 alert.message = "Please enter all information"
             case .notCollegeEmail:
-                alert.title = "Whoops!"
+                alert.title = "Invalid Email"
                 alert.message = "Please enter a valid college email"
             case .userExists:
                 alert.message = "Looks like a user account for that email address already exists"
+            case .termsNotChecked:
+                alert.title = "Please review and accept the Terms and Privacy Policy"
+            case .loginFailure:
+                break
             }
             alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
             
@@ -274,7 +384,13 @@ class RegisterViewController: UIViewController {
 extension RegisterViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         
-        if textField == emailField {
+        if textField == firstNameField {
+            lastNameField.becomeFirstResponder()
+        }
+        else if textField == lastNameField {
+            emailField.becomeFirstResponder()
+        }
+        else if textField == emailField {
             passwordField.becomeFirstResponder()
         }
         else if textField == passwordField {
@@ -284,55 +400,3 @@ extension RegisterViewController: UITextFieldDelegate {
         return true
     }
 }
-
-//extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate { // allows us to get results of user taking a picture or selecting photo from camera roll
-//    
-//    func presentPhotoActionSheet(){
-//        let actionSheet = UIAlertController(title: "Profile Picture", message: "How would you like to select a picture", preferredStyle: .actionSheet)
-//        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-//        actionSheet.addAction(UIAlertAction(title: "Take Photo",
-//                                            style: .default,
-//                                            handler: {[weak self] _ in
-//                                                self?.presentCamera()
-//        }))
-//        actionSheet.addAction(UIAlertAction(title: "Choose Photo",
-//                                            style: .default,
-//                                            handler: {[weak self] _ in
-//                                                self?.presentPhotoPicker()
-//        }))
-//        
-//        present(actionSheet, animated: true)
-//    }
-//    
-//    func presentCamera() {
-//        let vc = UIImagePickerController()
-//        vc.sourceType = .camera
-//        vc.delegate = self
-//        vc.allowsEditing = true
-//        present(vc, animated: true)
-//    }
-//    
-//    func presentPhotoPicker() {
-//        let vc = UIImagePickerController()
-//        vc.sourceType = .photoLibrary
-//        vc.delegate = self
-//        vc.allowsEditing = true
-//        present(vc, animated: true)
-//    }
-//    
-//    // called when user takes or selects a photo
-//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-//        print(info)
-//        picker.dismiss(animated: true, completion: nil)
-//        guard let selectedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage else {
-//            return
-//        }
-//        self.imageView.image = selectedImage
-//    }
-//    
-//    // called when user cancels selection / photo
-//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-//        picker.dismiss(animated: true, completion: nil)
-//    }
-//    
-//}

@@ -5,14 +5,13 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Community-->
         <scene sceneID="KVc-09-yFU">
             <objects>
-                <navigationController id="RJF-Ga-blO" sceneMemberID="viewController">
+                <navigationController interfaceStyle="light" id="RJF-Ga-blO" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Community" image="house.fill" catalog="system" id="TGD-vw-EG2"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Mtk-6A-I5C">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
@@ -29,12 +28,12 @@
         <!--My Conversations-->
         <scene sceneID="oc3-QT-zjo">
             <objects>
-                <viewController title="My Conversations" id="aQe-og-FzC" customClass="ConversationsViewController" customModule="Hubb_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="My Conversations" interfaceStyle="light" id="aQe-og-FzC" customClass="ConversationsViewController" customModule="Hubb_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="GfB-5O-vLy">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <viewLayoutGuide key="safeArea" id="gXZ-ae-92E"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <navigationItem key="navigationItem" largeTitleDisplayMode="never" id="sWP-md-7In"/>
                 </viewController>
@@ -45,8 +44,5 @@
     </scenes>
     <resources>
         <image name="house.fill" catalog="system" width="128" height="106"/>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
     </resources>
 </document>

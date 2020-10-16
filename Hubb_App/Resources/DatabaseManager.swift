@@ -196,7 +196,7 @@ extension DatabaseManager {
                         
                         let latestMessage = LatestMessage(date: dateString, text: group.name, senderName: senderName, isRead: false)
                         
-                        let newGroupInfo = Group(id: groupId, name: group.name, date: group.date, creator: group.creator, latestMessage: latestMessage)
+                        let newGroupInfo = Group(id: groupId, name: group.name, date: group.date, creator: group.creator, joined: true, members: 1, latestMessage: latestMessage)
                         
                         completion(.success(newGroupInfo))
                     })
@@ -273,7 +273,8 @@ extension DatabaseManager {
     /// Fetches all existing conversations
     public func getAllConversations(completion: @escaping (Result<[Group], Error>) -> Void) {
         database.child("group_detail").observe(.value, with: {snapshot in
-            guard let _ = snapshot.value else {
+            guard let _ = snapshot.value as? [String: Any],
+                  let uid = UserDefaults.standard.value(forKey: "uid") as? String else {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
@@ -288,21 +289,33 @@ extension DatabaseManager {
                     let creatorUid = currentGroupInfo["creator_uid"] as? String,
                     let creationDate = currentGroupInfo["date"] as? String,
                     let flaggedInfo = currentGroupInfo["flagged_info"] as? [String: Any],
+                    let members = currentGroupInfo["members"] as? [String],
                     let totalFlagged = flaggedInfo["total_flagged"] as? Int,
                     let latestMessage = currentGroupInfo["last_message"] as? [String: Any],
                     let date = latestMessage["date"] as? String,
                     let message = latestMessage["text"] as? String,
                     let senderName = latestMessage["sender_name"] as? String,
                     let isRead = latestMessage["is_read"] as? Bool else {
-                        return
+                    completion(.failure(DatabaseError.failedToFetch))
+                    return
                 }
                 
                 if totalFlagged > 1 {
                     continue
                 }
                 
+                var joined = false
+                if members.contains(uid) {
+                    joined = true
+                }
+                else {
+                    joined = false
+                }
+                
+                let totalMembers = members.count
+                
                 let latestMessageObject = LatestMessage(date: date, text: message, senderName: senderName, isRead: isRead)
-                let currentGroup = Group(id: groupId, name: name, date: creationDate, creator: creatorUid, latestMessage: latestMessageObject)
+                let currentGroup = Group(id: groupId, name: name, date: creationDate, creator: creatorUid, joined: joined, members: totalMembers, latestMessage: latestMessageObject)
                 
                 groups.insert(currentGroup, at: 0)
             }
@@ -311,8 +324,22 @@ extension DatabaseManager {
         
     }
     
+    public func getMyGroups(completion: @escaping (Result<[String], Error>) -> Void) {
+        guard let uid = UserDefaults.standard.value(forKey: "uid") else {
+            completion(.failure(DatabaseError.failedToFetch))
+            return
+        }
+        database.child("users/\(uid)/groups").observe(.value, with: {snapshot in
+        guard let groups = snapshot.value as? [String] else {
+            completion(.failure(DatabaseError.failedToFetch))
+            return
+        }
+            completion(.success(groups))
+        })
+    }
+    
     // Sends a message with target conversation and message
-    public func sendMessage(to groupId: String, newMessage: Message, sender: Sender, completion: @escaping (Bool) -> Void) {
+    public func sendMessage(to groupId: String, newMessage: Message, sender: Sender, joined: Bool, completion: @escaping (Bool) -> Void) {
 
         let newMessageReference = database.child("group_messages").child(groupId).childByAutoId()
 
@@ -381,20 +408,64 @@ extension DatabaseManager {
                 lastMessage["text"] = "Sent a photo"
             }
             
-            self?.database.child("group_detail/\(groupId)/last_message").setValue(lastMessage, withCompletionBlock: { error, _ in
-                guard error == nil else {
-                    completion(false)
-                    return
+            if joined == false {
+                self?.database.child("group_detail/\(groupId)/members").observeSingleEvent(of: .value, with: { snapshot in
+                    guard var members = snapshot.value as? [String],
+                          let uid = UserDefaults.standard.value(forKey: "uid") as? String else {
+                        return
+                    }
+                    
+                    members.append(uid)
+                    self?.database.child("group_detail/\(groupId)/members").setValue(members, withCompletionBlock: { error, _ in
+                        guard error == nil else {
+                            completion(false)
+                            return
+                        }
+                        print("successfully updated group members")
+                        
+                        self?.database.child("users/\(uid)/groups").observeSingleEvent(of: .value, with: { snapshot in
+                            var newGroups: [String]
+                            if let myGroups = snapshot.value as? [String] {
+                                newGroups = myGroups
+                                newGroups.append(groupId)
+                            }
+                            else {
+                                newGroups = [groupId]
+                            }
+                            
+                            self?.database.child("users/\(uid)/groups").setValue(newGroups, withCompletionBlock: { error, _ in
+                                guard error == nil else {
+                                    completion(false)
+                                    return
+                                }
+                                print("successfully updated last message")
+                                
+                                completion(true)
+                            })
+                            
+                            
+                        })
+                        
+                    })
+                    
+                    
+                })
+                    
                 }
-                print("successfully updated last message")
+            if joined == true {
                 completion(true)
+            }
             })
-        })
-
-   
-}
-
-    
+            
+//            self?.database.child("group_detail/\(groupId)/last_message").setValue(lastMessage, withCompletionBlock: { error, _ in
+//                guard error == nil else {
+//                    completion(false)
+//                    return
+//                }
+//                print("successfully updated last message")
+//                completion(true)
+//            })
+        }
 
 }
 

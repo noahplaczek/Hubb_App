@@ -13,6 +13,8 @@ struct Group {
     let name: String
     let date: String
     let creator: String
+    var joined: Bool
+    var members: Int
     let latestMessage: LatestMessage?
 }
 

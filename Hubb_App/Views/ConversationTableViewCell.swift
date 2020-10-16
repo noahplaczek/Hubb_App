@@ -10,7 +10,6 @@ import UIKit
 
 class ConversationTableViewCell: UITableViewCell {
     
-    // Static property to register cell to table view
     static let identifier = "ConversationTableViewCell"
     
     
@@ -26,14 +25,15 @@ class ConversationTableViewCell: UITableViewCell {
     private let groupNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.preferredFont(forTextStyle: .headline)
+        label.textColor = .black
         label.numberOfLines = 2
- //       label.lineBreakMode = .byWordWrapping
         return label
     }()
     
-    private let latestMessageLabel: UILabel = {
+    private let groupNumberLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.font = .systemFont(ofSize: 12, weight: .regular)
+//        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
         label.textColor = ConversationsViewController.myColor
         return label
     }()
@@ -49,7 +49,7 @@ class ConversationTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 //        contentView.addSubview(userImageView)
         contentView.addSubview(groupNameLabel)
-        contentView.addSubview(latestMessageLabel)
+        contentView.addSubview(groupNumberLabel)
         contentView.addSubview(dateLabel)
     }
     
@@ -59,7 +59,7 @@ class ConversationTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+        contentView.backgroundColor = .white
         // give frame to each of the subviews
 //        userImageView.frame = CGRect(x: 10,
 //                                     y: 10,
@@ -71,7 +71,7 @@ class ConversationTableViewCell: UITableViewCell {
                                      width: contentView.width - 120,
                                      height: (contentView.height)/2)
         
-        latestMessageLabel.frame = CGRect(x: 20,
+        groupNumberLabel.frame = CGRect(x: 20,
                                         y: groupNameLabel.bottom + 10,
                                         width: contentView.width - 120,
                                         height: (contentView.height - 20)/2)
@@ -87,18 +87,26 @@ class ConversationTableViewCell: UITableViewCell {
         groupNameLabel.text = model.name
         dateLabel.text = model.date
         
-        guard let latestMessage = model.latestMessage else {
-            return
-        }
-        
-        if latestMessage.text == "New Group" {
-            latestMessageLabel.text = "New Group"
+        if model.joined {
+            dateLabel.text = "    JOINED"
+            dateLabel.textColor = ConversationsViewController.myColor
         }
         else {
-            latestMessageLabel.text = latestMessage.senderName + ": " + latestMessage.text
+            dateLabel.textColor = .lightGray
+        }
+//        if dateLabel.text == "JOINED" {
+//                        dateLabel.textColor = ConversationsViewController.myColor
+//
+//        }
+//
+        if model.members > 1 {
+            groupNumberLabel.text = "\(model.members) Chatting"
+//            groupNumberLabel.text = latestMessage.senderName + ": " + latestMessage.text
+        }
+        else {
+            groupNumberLabel.text = "New Group"
         }
 
-        
     }
   
 }

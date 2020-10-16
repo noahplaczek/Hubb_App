@@ -19,6 +19,8 @@ class ConversationsViewController: UIViewController {
     
     private var searchResults = [Group]()
     
+    private var myGroups = [String]()
+    
     private let tableView: UITableView = {
         let table = UITableView()
         table.isHidden = false
@@ -33,6 +35,17 @@ class ConversationsViewController: UIViewController {
         scrollView.clipsToBounds = true
         scrollView.isHidden = true
         return scrollView
+    }()
+    
+    private let noConversationsLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Oops, something went wrong.\n\nCheck your internet connection"
+        label.textAlignment = .center
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 20, weight: .medium)
+        label.isHidden = true
+        label.numberOfLines = 0
+        return label
     }()
     
     private let noResultsLabel: UILabel = {
@@ -87,18 +100,23 @@ class ConversationsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
+        tableView.backgroundColor = .white
+        
+        print(" and Terms".stringWidthTwo)
+        print("Privacy Policy".stringWidthTwo)
         
         validateAuth()
         view.addSubview(tableView)
-        view.backgroundColor = .white
+        
         navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationController?.navigationBar.tintColor = UIColor.white
         navigationController?.navigationBar.topItem?.titleView = searchBar
         searchBar.delegate = self
         
-        let tapGesture = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
-        self.tableView.addGestureRecognizer(tapGesture)
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.tableView.addGestureRecognizer(swipeGesture)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
         
@@ -107,11 +125,13 @@ class ConversationsViewController: UIViewController {
         scrollView.addSubview(noResultsSearchTerm)
         scrollView.addSubview(noResultsCreateChat)
         scrollView.addSubview(createChatButton)
+        view.addSubview(noConversationsLabel)
         
         createChatButton.addTarget(self, action: #selector(didTapComposeButton),
                               for: .touchUpInside)
         
         setupTableView()
+        listenForMyConversations()
         startListeningForConversations()
     }
     
@@ -127,18 +147,16 @@ class ConversationsViewController: UIViewController {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds
         scrollView.frame = view.bounds
-        let centered = scrollView.width / 3
-        let middle = scrollView.height / 3
         
-        noResultsLabel.frame = CGRect(x: (scrollView.width - centered) / 2,
-                                  y: (scrollView.height - middle) / 2,
+        noResultsLabel.frame = CGRect(x: (scrollView.width - 138) / 2,
+                                  y: (scrollView.height - (scrollView.height / 3)) / 2,
                                   width: 138,
                                   height: 50)
-        noResultsSearchTerm.frame = CGRect(x: (scrollView.width - centered) / 2,
+        noResultsSearchTerm.frame = CGRect(x: (scrollView.width - 138) / 2,
                                   y: noResultsLabel.bottom+10,
                                   width: 138,
                                   height: 50)
-        noResultsCreateChat.frame = CGRect(x: (scrollView.width - centered) / 2,
+        noResultsCreateChat.frame = CGRect(x: (scrollView.width - 135) / 2,
                                   y: noResultsSearchTerm.bottom+10,
                                   width: 135,
                                   height: 50)
@@ -146,6 +164,10 @@ class ConversationsViewController: UIViewController {
                                   y: noResultsCreateChat.bottom+20,
                                   width: scrollView.width-60,
                                   height: 52)
+        noConversationsLabel.frame = CGRect(x: (scrollView.width - 294) / 2,
+                                  y: (scrollView.height - 100) / 2,
+                                  width: 294,
+                                  height: 100)
     }
     
     private func validateAuth() {
@@ -167,13 +189,19 @@ class ConversationsViewController: UIViewController {
         print("starting conversation fetch...")
 
         DatabaseManager.shared.getAllConversations(completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            
             switch result {
             case .success(let allGroups):
                 guard !allGroups.isEmpty else {
                     return
                 }
-//                self?.tableView.isHidden = false
-//                self?.scrollView.isHidden = true
+                if !strongSelf.noConversationsLabel.isHidden {
+                    self?.tableView.isHidden = false
+                    self?.noConversationsLabel.isHidden = true
+                }
                 
                 if self?.groups.count == self?.allGroups.count {
                     self?.allGroups = allGroups
@@ -189,7 +217,27 @@ class ConversationsViewController: UIViewController {
 
             case .failure(let error):
                 self?.tableView.isHidden = true
-                print("failed to get convos: \(error)")
+                self?.noConversationsLabel.isHidden = false
+                print("failed to get all convos: \(error)")
+            }
+        })
+    }
+    
+    private func listenForMyConversations() {
+        DatabaseManager.shared.getMyGroups(completion: { [weak self] result in
+            switch result {
+            case .success(let myGroups):
+                guard !myGroups.isEmpty else {
+                    return
+                }
+                self?.myGroups = myGroups
+                
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
+                
+            case .failure(let error):
+                print("failed to get my convos: \(error)")
             }
         })
     }
@@ -208,8 +256,6 @@ class ConversationsViewController: UIViewController {
             let vc = ChatViewController(group: group)
             vc.navigationItem.largeTitleDisplayMode = .never
             strongSelf.navigationController?.pushViewController(vc, animated: true)
-//
-//            strongSelf.tableView.reloadData()
         }
         
         let navVC = UINavigationController(rootViewController: vc)
@@ -228,14 +274,14 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
         let model = groups[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: ConversationTableViewCell.identifier,
                                                  for: indexPath) as! ConversationTableViewCell
-        cell.configure(with: model)
+        cell.configure(with: model) 
         return cell
     }
     
-    // when a user clicks on a cell, want to push onto stack
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true) // unhighlights what you selected
+        tableView.deselectRow(at: indexPath, animated: true) 
         let model = groups[indexPath.row]
+        
         openConversation(model)
     }
     
@@ -247,7 +293,7 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if numberOfLines(name: groups[indexPath.row].name) == 2 {return 120}
+        if numberOfLines(name: groups[indexPath.row].name) == 2 {return 110}
         else {return 90}
     }
     
@@ -263,9 +309,6 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
         return lines(label: groupNameLabel)
     }
     func lines(label: UILabel) -> Int {
-//        let zone = CGSize(width: scrollView.width - 120, height: CGFloat(MAXFLOAT))
-//        let fittingHeight = Float(label.sizeThatFits(zone).height)
-//        return lroundf(fittingHeight / Float(label.font.lineHeight))
         let textSize = CGSize(width: view.width - 120, height: CGFloat(Float.infinity))
         let rHeight = lroundf(Float(label.sizeThatFits(textSize).height))
         let charSize = lroundf(Float(label.font.lineHeight))
@@ -327,8 +370,13 @@ extension ConversationsViewController: UISearchBarDelegate {
             print("UISearchBar.text cleared!")
             groups = allGroups
             scrollView.isHidden = true
-            tableView.isHidden = false
-            tableView.reloadData()
+            if !noConversationsLabel.isHidden {
+                tableView.isHidden = true
+            }
+            else {
+                tableView.isHidden = false
+                tableView.reloadData()
+            }
         }
     }
     
@@ -337,7 +385,13 @@ extension ConversationsViewController: UISearchBarDelegate {
 extension String {
     var stringWidth: CGFloat {
         let constraintRect = CGSize(width: UIScreen.main.bounds.width, height: .greatestFiniteMagnitude)
-        let boundingBox = self.trimmingCharacters(in: .whitespacesAndNewlines).boundingRect(with: constraintRect, options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 20, weight: .bold)], context: nil)
+        let boundingBox = self.trimmingCharacters(in: .whitespacesAndNewlines).boundingRect(with: constraintRect, options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 21, weight: .medium)], context: nil)
         return boundingBox.width
     }
+    var stringWidthTwo: CGFloat {
+        let constraintRect = CGSize(width: UIScreen.main.bounds.width, height: .greatestFiniteMagnitude)
+        let boundingBox = self.trimmingCharacters(in: .whitespacesAndNewlines).boundingRect(with: constraintRect, options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .subheadline)], context: nil)
+        return boundingBox.width
+    }
+    
 }

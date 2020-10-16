@@ -32,11 +32,12 @@ class LoginViewController: UIViewController {
         field.autocorrectionType = .no
         field.autocapitalizationType = .none
         field.returnKeyType = .continue
+        field.textColor = UIColor.gray
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "School Email..."
-        field.backgroundColor = .secondarySystemBackground
+        field.attributedPlaceholder = NSAttributedString(string: "School Email...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+        field.backgroundColor = .white
         
         // Buffer so text is not flush against the left of the text field
         field.leftView = UIView(frame: CGRect(x: 0, y: 0 , width: 5, height: 0))
@@ -52,9 +53,10 @@ class LoginViewController: UIViewController {
         field.returnKeyType = .done
         field.layer.cornerRadius = 12
         field.layer.borderWidth = 1
+        field.textColor = UIColor.gray
         field.layer.borderColor = UIColor.lightGray.cgColor
-        field.placeholder = "Password..."
-        field.backgroundColor = .secondarySystemBackground
+        field.attributedPlaceholder = NSAttributedString(string: "Password...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+        field.backgroundColor = .white
         field.leftView = UIView(frame: CGRect(x: 0, y: 0 , width: 5, height: 0))
         field.leftViewMode = .always
         field.isSecureTextEntry = true
@@ -78,7 +80,7 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log In"
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .white
         
         loginButton.addTarget(self, action: #selector(loginButtonTapped),
                               for: .touchUpInside)
@@ -112,7 +114,7 @@ class LoginViewController: UIViewController {
             let currentUser = FirebaseAuth.Auth.auth().currentUser,
                 let result = authResult,
                 error == nil else {
-                    print("Failed to log in user with email: \(email)")
+                self?.alertUserLoginError(is: LoginError.loginFailure)
                     return
             }
         
@@ -149,9 +151,18 @@ class LoginViewController: UIViewController {
     func alertUserLoginError(is error: LoginError) {
         let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
         switch error {
-        default:
-            alert.title = "Whoops!"
-            alert.message = "Please enter all information"
+        case .notCollegeEmail:
+            break
+        case .emptyField:
+            alert.title = "Empty Field"
+            alert.message = "Please enter a valid email and password"
+        case .userExists:
+            break
+        case .termsNotChecked:
+            break
+        case .loginFailure:
+            alert.title = "Invalid Credentials"
+            alert.message = "Please enter a valid email and password"
         }
         
         alert.addAction(UIAlertAction(title: "Dismiss", style:  .cancel, handler: nil))
@@ -168,7 +179,7 @@ class LoginViewController: UIViewController {
                                  width: size,
                                  height: size)
         emailField.frame = CGRect(x: 30,
-                                  y: imageView.bottom + 10,
+                                  y: imageView.bottom + 20,
                                   width: scrollView.width - 60,
                                  height: 53)
         passwordField.frame = CGRect(x: 30,
@@ -176,7 +187,7 @@ class LoginViewController: UIViewController {
                                   width: scrollView.width - 60,
                                  height: 53)
         loginButton.frame = CGRect(x: 30,
-                                  y: passwordField.bottom + 10,
+                                  y: passwordField.bottom + 20,
                                   width: scrollView.width - 60,
                                  height: 53)
     }
@@ -186,7 +197,7 @@ class LoginViewController: UIViewController {
 }
 
 enum LoginError {
-    case notCollegeEmail, emptyField, userExists
+    case notCollegeEmail, emptyField, userExists, termsNotChecked, loginFailure
 }
 
 extension LoginViewController: UITextFieldDelegate {

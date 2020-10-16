@@ -41,7 +41,7 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
     
     private let reportContentField: UITextView = {
         let field = UITextView()
-        field.autocapitalizationType = .none
+        field.autocapitalizationType = .sentences
         field.autocorrectionType = .default
         field.returnKeyType = .continue
         field.layer.cornerRadius = 12
@@ -57,6 +57,7 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
     private let countingLabel: UILabel = {
        let label = UILabel()
         label.text = "400/400"
+        label.textColor = UIColor.lightGray
         label.font = .systemFont(ofSize: 16)
         return label
     }()

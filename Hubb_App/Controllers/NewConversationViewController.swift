@@ -31,7 +31,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     
     private let groupNameField: UITextView = {
         let field = UITextView()
-        field.autocapitalizationType = .none
+        field.autocapitalizationType = .sentences
         field.autocorrectionType = .default
         field.returnKeyType = .continue
         field.layer.cornerRadius = 12
@@ -47,6 +47,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     private let countingLabel: UILabel = {
        let label = UILabel()
         label.text = "60/60"
+        label.textColor = UIColor.lightGray
         label.font = .systemFont(ofSize: 16)
         return label
     }()
@@ -187,7 +188,7 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         format.dateFormat = "MM-dd-yyyy"
         let formattedDate = format.string(from: date)
         
-        let newGroup = Group(id: nil, name: groupName, date: formattedDate, creator: groupCreatorUid, latestMessage: nil)
+        let newGroup = Group(id: nil, name: groupName, date: formattedDate, creator: groupCreatorUid, joined: true, members: 1, latestMessage: nil)
 
         DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self]  result in
             guard let strongSelf = self else {
