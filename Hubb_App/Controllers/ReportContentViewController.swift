@@ -74,6 +74,12 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
     }()
     
     func textViewDidBeginEditing(_ textView: UITextView) {
+        if scrollView.height < 650 {
+            self.scrollView.frame.origin.y = -70
+        }
+        else if scrollView.height < 700 {
+            self.scrollView.frame.origin.y = -30
+        }
         if textView.textColor == .lightGray {
             textView.text = nil
             textView.textColor = .black
@@ -107,8 +113,11 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(reportContent))
         reportButton.addTarget(self, action: #selector(reportContent),
                               for: .touchUpInside)
-        
         reportContentField.delegate = self
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(ReportContentViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.scrollView.addGestureRecognizer(tapGesture)
      
         view.addSubview(scrollView)
         scrollView.addSubview(reportContentLabel)
@@ -141,6 +150,14 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
         
     }
     
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        self.scrollView.endEditing(true)
+    }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+      self.scrollView.frame.origin.y = 0
+    }
+    
     @objc private func dismissSelf() {
         dismiss(animated: true, completion: nil)
     }
@@ -152,7 +169,8 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
         guard
             let reportReason = reportContentField.text,
             reportReason != "Description of inappropriate content...",
-            !reportReason.isEmpty
+            !reportReason.replacingOccurrences(of: " ", with: "").isEmpty,
+            !reportReason.replacingOccurrences(of: "\n", with: "").isEmpty
         else {
                 groupCreationError(message: "Please enter a reason for reporting content")
                 return
@@ -192,21 +210,11 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
     }
     
     func groupCreationError(message: String) {
-        let alert = UIAlertController(title: "Whoops!", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Dismiss", style:  .cancel, handler: nil))
         
         present(alert, animated: true)
     }
 
-}
-
-extension ReportContentViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-
-        if textField == reportContentField {
-            reportContent()
-        }
-        return true
-    }
 }

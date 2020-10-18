@@ -12,7 +12,8 @@ import FirebaseAuth
 
 class LoginViewController: UIViewController {
 
-//    private let spinner = JGProgressHUD(style: .dark)
+    //    private let spinner = JGProgressHUD(style: .dark)
+    var activeTextField : UITextField? = nil
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -75,8 +76,7 @@ class LoginViewController: UIViewController {
         
         return button
     }()
-    
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log In"
@@ -93,6 +93,15 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginButton)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.scrollView.addGestureRecognizer(tapGesture)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     @objc private func loginButtonTapped() {
@@ -135,8 +144,7 @@ class LoginViewController: UIViewController {
                 case .success(let userData):
                     UserDefaults.standard.set("\(userData.lastName)", forKey: "last_name")
                     UserDefaults.standard.set("\(userData.firstName)", forKey: "first_name")
-                    print("did retrieve user")
-                    
+                    NotificationCenter.default.post(name: .didLogInNotification, object: nil) 
                 case .failure(let error):
                     print("Failed to read data with error: \(error)")
                 }
@@ -174,6 +182,7 @@ class LoginViewController: UIViewController {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
         let size = scrollView.width/3
+        let fieldHeight = scrollView.height / 17
         imageView.frame = CGRect(x: (scrollView.width-size)/2,
                                  y: scrollView.height/5,
                                  width: size,
@@ -181,18 +190,41 @@ class LoginViewController: UIViewController {
         emailField.frame = CGRect(x: 30,
                                   y: imageView.bottom + 20,
                                   width: scrollView.width - 60,
-                                 height: 53)
+                                 height: fieldHeight)
         passwordField.frame = CGRect(x: 30,
                                   y: emailField.bottom + 10,
                                   width: scrollView.width - 60,
-                                 height: 53)
+                                 height: fieldHeight)
         loginButton.frame = CGRect(x: 30,
                                   y: passwordField.bottom + 20,
                                   width: scrollView.width - 60,
-                                 height: 53)
+                                 height: 52)
     }
 
+    @objc func keyboardWillShow(notification: NSNotification) {
+        guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
+            return
+        }
+        var offset: CGFloat
+        
+        if let activeTextField = activeTextField {
+            if activeTextField == passwordField {
+                offset = 150
+            }
+            else {
+                offset = 200
+            }
+            self.scrollView.frame.origin.y = offset - keyboardSize.height
+        }
+    }
     
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        self.scrollView.endEditing(true)
+    }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+      self.scrollView.frame.origin.y = 0
+    }
     
 }
 
@@ -212,4 +244,14 @@ extension LoginViewController: UITextFieldDelegate {
         
         return true
     }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        // set the activeTextField to the selected textfield
+        self.activeTextField = textField
+      }
+        
+      // when user click 'done' or dismiss the keyboard
+      func textFieldDidEndEditing(_ textField: UITextField) {
+        self.activeTextField = nil
+      }
 }

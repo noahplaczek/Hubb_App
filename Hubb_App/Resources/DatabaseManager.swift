@@ -582,3 +582,22 @@ extension DatabaseManager {
 //    }
     
 }
+
+// MARK: - Removing Observers
+extension DatabaseManager {
+    
+    public func removeGroupObservers(completion: @escaping (Bool) -> Void) {
+        guard let uid = UserDefaults.standard.value(forKey: "uid") else {
+            completion(false)
+            return
+        }
+        database.child("group_detail").removeAllObservers()
+        database.child("users/\(uid)/groups").removeAllObservers()
+        completion(true)
+        //database.child("group_messages/\(id)").removeAllObservers()
+    }
+    
+    public func removeMessagesObserver(groupId: String) {
+        database.child("group_messages/\(groupId)").removeAllObservers()
+    }
+}

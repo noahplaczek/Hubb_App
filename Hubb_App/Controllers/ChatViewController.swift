@@ -61,15 +61,17 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        guard let id = groupId else{
+            return
+        }
+        listenForMessages(id: id)
         view.backgroundColor = .white
         messagesCollectionView.backgroundColor = .white
         messageInputBar.backgroundView.backgroundColor = .white
         
         messageInputBar.inputTextView.textColor = .black
-            
-//            = NSAttributedString(string: "Password...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
-//
-//        messageInputBar.inputTextView.font = UIFont.preferredFont(forTextStyle: .headline)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "ellipsis"), for: .normal)
@@ -80,8 +82,9 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
         self.navigationItem.titleView = multilineNavBar
         multilineNavBar.text = self.groupName
         
-        
-        
+        self.navigationItem.hidesBackButton = true
+        let newBackButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(back))
+        self.navigationItem.leftBarButtonItem = newBackButton
         
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
@@ -100,7 +103,25 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
             layout.emojiMessageSizeCalculator.incomingAvatarSize = .zero
             layout.textMessageSizeCalculator.incomingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 0)
             layout.textMessageSizeCalculator.outgoingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)
+            layout.photoMessageSizeCalculator.incomingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 0)
+            layout.photoMessageSizeCalculator.outgoingMessageTopLabelAlignment.textInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)
         }
+    }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+        guard let _ = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
+            return
+        }
+        messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
+    }
+    
+    @objc func back(sender: UIBarButtonItem) {
+        guard let groupId = groupId else {
+            return
+        }
+        DatabaseManager.shared.removeMessagesObserver(groupId: groupId)
+        messages.removeAll()
+        self.navigationController?.popViewController(animated: true)
     }
     
     private func setupInputButton() {
@@ -143,14 +164,12 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     @objc func didTapActionButton() {
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
         actionSheet.addAction(UIAlertAction(title: "Report Group", style: .destructive, handler: { [weak self] _ in
             guard let groupId = self?.groupId else {
                 return
             }
             let vc = ReportContentViewController(groupID: groupId, userID: "")
-            
-            
+                        
             vc.completion = { [weak self] bool in
                 guard let strongSelf = self else {
                     return 
@@ -170,46 +189,12 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
         
         self.present(actionSheet, animated: true)
     }
-    
-//    private func notFavorited() {
-//        //create a new button
-//        let button = UIButton(type: .custom)
-//        //set image for button
-//        button.setImage(UIImage(systemName: "star"), for: .normal)
-//        //add function for button
-//        button.addTarget(self, action: #selector(didTapFavorites), for: .touchUpInside)
-//        //set frame
-//        button.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
-//
-//        let barButton = UIBarButtonItem(customView: button)
-//        //assign button to navigationbar
-//        self.navigationItem.rightBarButtonItem = barButton
-//
-//
-//    }
-    
-//    private func favorited() {
-//        //create a new button
-//        let button = UIButton(type: .custom)
-//        //set image for button
-//        button.setImage(UIImage(systemName: "star.filled"), for: .normal)
-//        //add function for button
-//        button.addTarget(self, action: #selector(didTapFavorites), for: .touchUpInside)
-//        //set frame
-//        button.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
-//
-//        let barButton = UIBarButtonItem(customView: button)
-//        //assign button to navigationbar
-//        self.navigationItem.rightBarButtonItem = barButton
-//    }
+
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        messageInputBar.inputTextView.becomeFirstResponder()
-        guard let id = groupId else{
-            return
-        }
-        listenForMessages(id: id)
+//        messageInputBar.inputTextView.becomeFirstResponder()
+        
     }
     
     private func listenForMessages(id: String) {
@@ -281,7 +266,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
 
 extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
 
-    // how it is determined if the message appears on right (you) or left
     func currentSender() -> SenderType {
         if let sender = selfSender {
             return sender

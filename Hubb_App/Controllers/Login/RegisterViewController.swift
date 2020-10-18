@@ -14,6 +14,8 @@ class RegisterViewController: UIViewController {
     
 //    private let spinner = JGProgressHUD(style: .dark)
     
+    private var listeningForConversations = false
+    private var activeTextField : UITextField? = nil
     private var isChecked = false
     
     private let scrollView: UIScrollView = {
@@ -183,6 +185,11 @@ class RegisterViewController: UIViewController {
         checkMark.isUserInteractionEnabled = true
         scrollView.isUserInteractionEnabled = true
         
+        NotificationCenter.default.addObserver(self, selector: #selector(RegisterViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(RegisterViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.scrollView.addGestureRecognizer(tapGesture)
+        
         firstNameField.delegate = self
         lastNameField.delegate = self
         emailField.delegate = self
@@ -202,6 +209,42 @@ class RegisterViewController: UIViewController {
         scrollView.addSubview(termsButton)
         // 896 / XX = 52
         // 40
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+        guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
+            return
+        }
+        var offset: CGFloat
+        
+        if let activeTextField = activeTextField {
+            if activeTextField == lastNameField {
+                offset = keyboardSize.height - (scrollView.height / 17)
+            }
+            else if activeTextField == emailField {
+                offset = keyboardSize.height - (scrollView.height / 7)
+            }
+            else if activeTextField == passwordField {
+                offset = 20
+            }
+            else {
+                offset = keyboardSize.height
+            }
+            
+            self.scrollView.frame.origin.y = offset - keyboardSize.height
+        }
+    }
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        self.scrollView.endEditing(true)
+    }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+      self.scrollView.frame.origin.y = 0
     }
     
     @objc private func didTapPrivacyPolicy() {
@@ -293,6 +336,9 @@ class RegisterViewController: UIViewController {
         if !email.hasSuffix("@depaul.edu") {
             alertUserLoginError(is: LoginError.notCollegeEmail)
         }
+        if email == "@depaul.edu" {
+            alertUserLoginError(is: LoginError.notCollegeEmail)
+        }
         
         if isChecked {
             
@@ -300,21 +346,21 @@ class RegisterViewController: UIViewController {
             
             // Firebase Register
             
-            DatabaseManager.shared.userExists(with: email, completion: {[weak self] exists in
-                guard let strongSelf = self else {
-                    return
-                }
-                
-//                DispatchQueue.main.async {
-//                    strongSelf.spinner.dismiss()
+//            DatabaseManager.shared.userExists(with: email, completion: {[weak self] exists in
+//                guard let strongSelf = self else {
+//                    return
+//                }
+//
+////                DispatchQueue.main.async {
+////                    strongSelf.spinner.dismiss()
+////                }
+//
+//                guard !exists else {
+//                    self?.alertUserLoginError(is: LoginError.userExists)
+//                    return
 //                }
                 
-                guard !exists else {
-                    self?.alertUserLoginError(is: LoginError.userExists)
-                    return
-                }
-                
-                FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
+                FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { [weak self] authResult, error in
                     guard authResult != nil, error == nil,
                     let user = FirebaseAuth.Auth.auth().currentUser else {
                         self?.alertUserLoginError(is: .userExists)
@@ -332,14 +378,14 @@ class RegisterViewController: UIViewController {
                     DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
                         if success {
                             print("User successfully added to database")
+                            NotificationCenter.default.post(name: .didLogInNotification, object: nil)
                         }
                         else {
                             print("Error adding user to database")
                         }
                     })
-                    strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                    self?.navigationController?.dismiss(animated: true, completion: nil)
                 })
-            })
         }
         
         else {
@@ -383,7 +429,6 @@ class RegisterViewController: UIViewController {
 
 extension RegisterViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
         if textField == firstNameField {
             lastNameField.becomeFirstResponder()
         }
@@ -399,4 +444,14 @@ extension RegisterViewController: UITextFieldDelegate {
         
         return true
     }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        // set the activeTextField to the selected textfield
+        self.activeTextField = textField
+      }
+        
+      // when user click 'done' or dismiss the keyboard
+      func textFieldDidEndEditing(_ textField: UITextField) {
+        self.activeTextField = nil
+      }
 }

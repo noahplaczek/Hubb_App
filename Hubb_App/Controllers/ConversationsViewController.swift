@@ -10,7 +10,7 @@ import UIKit
 import FirebaseAuth
 
 class ConversationsViewController: UIViewController {
-    
+        
     static public let myColor = UIColor(red: 101.0/255.0, green: 200.0/255.0, blue: 255.0/255.0, alpha: 1.0)
     
     private var allGroups = [Group]()
@@ -103,11 +103,14 @@ class ConversationsViewController: UIViewController {
         view.backgroundColor = .white
         tableView.backgroundColor = .white
         
-        print(" and Terms".stringWidthTwo)
-        print("Privacy Policy".stringWidthTwo)
+        print("how many times")
         
         validateAuth()
         view.addSubview(tableView)
+        tableView.tableFooterView = UIView()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(signedIn), name: .didLogInNotification, object: nil)
+
         
         navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
@@ -118,6 +121,11 @@ class ConversationsViewController: UIViewController {
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         self.tableView.addGestureRecognizer(swipeGesture)
         
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "ellipsis"), for: .normal)
+        button.addTarget(self, action: #selector(didTapActionButton), for: .touchUpInside)
+        let barButton = UIBarButtonItem(customView: button)
+        self.navigationItem.leftBarButtonItem = barButton
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
         
         view.addSubview(scrollView)
@@ -131,9 +139,55 @@ class ConversationsViewController: UIViewController {
                               for: .touchUpInside)
         
         setupTableView()
+    }
+    
+    @objc func signedIn() {
         listenForMyConversations()
         startListeningForConversations()
     }
+
+    @objc func didTapActionButton() {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { [weak self] _ in
+            
+            guard let strongSelf = self else {
+                return
+            }
+            
+            UserDefaults.standard.setValue(nil, forKey: "last_name")
+            UserDefaults.standard.setValue(nil, forKey: "first_name")
+            UserDefaults.standard.setValue(nil, forKey: "name")
+            
+            do {
+                try FirebaseAuth.Auth.auth().signOut()
+                strongSelf.myGroups.removeAll()
+                strongSelf.groups.removeAll()
+                strongSelf.allGroups.removeAll()
+                DatabaseManager.shared.removeGroupObservers(completion: {success in
+                    if success {
+                        print("removed all observers")
+                    }
+                    else {
+                        print("error in removing observers")
+                    }
+                })
+                let vc = RegisterViewController()
+                let nav = UINavigationController(rootViewController: vc)
+                nav.modalPresentationStyle = .fullScreen
+                strongSelf.present(nav, animated: false)
+            }
+            catch {
+                print("Failed to log out")
+            }
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(actionSheet, animated: true)
+        
+    }
+    
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         self.view.endEditing(true)
@@ -141,6 +195,10 @@ class ConversationsViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .didLogInNotification, object: nil)
     }
     
     override func viewDidLayoutSubviews() {
@@ -176,6 +234,10 @@ class ConversationsViewController: UIViewController {
             let nav = UINavigationController(rootViewController: vc)
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: false)
+        }
+        else {
+            listenForMyConversations()
+            startListeningForConversations()
         }
     }
     
@@ -224,6 +286,9 @@ class ConversationsViewController: UIViewController {
     }
     
     private func listenForMyConversations() {
+                
+        print("we listening now boi")
+        
         DatabaseManager.shared.getMyGroups(completion: { [weak self] result in
             switch result {
             case .success(let myGroups):
@@ -238,6 +303,9 @@ class ConversationsViewController: UIViewController {
                 
             case .failure(let error):
                 print("failed to get my convos: \(error)")
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
             }
         })
     }

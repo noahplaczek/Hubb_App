@@ -64,6 +64,9 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     }()
     
     func textViewDidBeginEditing(_ textView: UITextView) {
+        if scrollView.height < 700 {
+            self.scrollView.frame.origin.y = -60
+        }
         if textView.textColor == .lightGray {
             textView.text = nil
             textView.textColor = .black
@@ -83,23 +86,13 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     }
 
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-    return textView.text.count + (text.count - range.length) <= 60
+        if(text == "\n") {
+            textView.resignFirstResponder()
+//            createGroup()
+            return true
+        }
+        return textView.text.count + (text.count - range.length) <= 60
     }
-    
-//    private let groupDescriptionField: UITextField = {
-//        let field = UITextField()
-//        field.autocapitalizationType = .none
-//        field.autocorrectionType = .default
-//        field.returnKeyType = .done
-//        field.layer.cornerRadius = 12
-//        field.layer.borderWidth = 1
-//        field.layer.borderColor = UIColor.lightGray.cgColor
-//        field.placeholder = "Group Description (60 Characters)..."
-//        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
-//        field.leftViewMode = .always
-//        field.backgroundColor = .secondarySystemBackground
-//        return field
-//    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -113,8 +106,11 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(createGroup))
         createChatButton.addTarget(self, action: #selector(createGroup),
                               for: .touchUpInside)
-        
         groupNameField.delegate = self
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(NewConversationViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.scrollView.addGestureRecognizer(tapGesture)
      
         view.addSubview(scrollView)
         scrollView.addSubview(groupNameLabel)
@@ -148,33 +144,26 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
                                   height: 52)
     }
     
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        self.scrollView.endEditing(true)
+    }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+      self.scrollView.frame.origin.y = 0
+    }
+    
     @objc private func dismissSelf() {
-//        dismiss(animated: true, completion: nil)
-        
-        do {
-            try FirebaseAuth.Auth.auth().signOut()
-
-            let vc = RegisterViewController()
-            let nav = UINavigationController(rootViewController: vc)
-            nav.modalPresentationStyle = .fullScreen
-            present(nav, animated: true)
-        }
-        catch {
-            print("Failed to log out")
-        }
+        dismiss(animated: true, completion: nil)
     }
     
     @objc private func createGroup() {
         
         groupNameField.resignFirstResponder()
-//        groupDescriptionField.resignFirstResponder()
-
         guard
             let groupName = groupNameField.text,
-//            let groupDescription = groupDescriptionField.text,
             groupName != "60 Characters Max",
             !groupName.isEmpty
-//            !groupDescription.isEmpty
         else {
                 groupCreationError(message: "Please enter a Chat Name")
                 return
@@ -218,18 +207,6 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
     }
 
 }
-
-extension NewConversationViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-
-        if textField == groupNameField {
-            createGroup()
-        }
-
-        return true
-    }
-}
-
 
 class TextFieldWithPadding: UITextField {
     var textPadding = UIEdgeInsets(

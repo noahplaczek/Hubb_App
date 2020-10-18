@@ -15,7 +15,6 @@
 		068CBC65250D201B00953DB4 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC64250D201B00953DB4 /* StorageManager.swift */; };
 		068CBC67250D476300953DB4 /* ConversationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */; };
 		068CBC69250D47A700953DB4 /* ConversationsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC68250D47A700953DB4 /* ConversationsModel.swift */; };
-		068CBC6B250D532B00953DB4 /* ExploreConversationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */; };
 		068CBC6D250D689F00953DB4 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6C250D689F00953DB4 /* ChatViewController.swift */; };
 		068CBC6F250D71ED00953DB4 /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6E250D71ED00953DB4 /* ChatModels.swift */; };
 		068CBC71250E8F2400953DB4 /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC70250E8F2400953DB4 /* UserModel.swift */; };
@@ -28,7 +27,6 @@
 		06DE722F250CF6A600AA0CC7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 06DE722D250CF6A600AA0CC7 /* LaunchScreen.storyboard */; };
 		06DE723D250CF82E00AA0CC7 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE723C250CF82E00AA0CC7 /* LoginViewController.swift */; };
 		06DE723F250CF83A00AA0CC7 /* RegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE723E250CF83A00AA0CC7 /* RegisterViewController.swift */; };
-		06DE7241250CF85600AA0CC7 /* PhotoViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7240250CF85600AA0CC7 /* PhotoViewerViewController.swift */; };
 		06DE7243250CF87A00AA0CC7 /* NewConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */; };
 		06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */; };
 		3E3B78A5F9EC4673AF4AAF2E /* Pods_Hubb_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */; };
@@ -43,7 +41,6 @@
 		068CBC64250D201B00953DB4 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationTableViewCell.swift; sourceTree = "<group>"; };
 		068CBC68250D47A700953DB4 /* ConversationsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationsModel.swift; sourceTree = "<group>"; };
-		068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreConversationsViewController.swift; sourceTree = "<group>"; };
 		068CBC6C250D689F00953DB4 /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		068CBC6E250D71ED00953DB4 /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 		068CBC70250E8F2400953DB4 /* UserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
@@ -58,7 +55,6 @@
 		06DE7230250CF6A600AA0CC7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		06DE723C250CF82E00AA0CC7 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		06DE723E250CF83A00AA0CC7 /* RegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterViewController.swift; sourceTree = "<group>"; };
-		06DE7240250CF85600AA0CC7 /* PhotoViewerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewerViewController.swift; sourceTree = "<group>"; };
 		06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationViewController.swift; sourceTree = "<group>"; };
 		06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.debug.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.debug.xcconfig"; sourceTree = "<group>"; };
@@ -116,12 +112,10 @@
 			children = (
 				06DE7246250CF8C600AA0CC7 /* Login */,
 				06DE7226250CF6A400AA0CC7 /* ConversationsViewController.swift */,
-				06DE7240250CF85600AA0CC7 /* PhotoViewerViewController.swift */,
 				06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */,
-				06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */,
-				068CBC6A250D532B00953DB4 /* ExploreConversationsViewController.swift */,
 				068CBC6C250D689F00953DB4 /* ChatViewController.swift */,
 				0603A627253539BA00F32ED4 /* ReportContentViewController.swift */,
+				06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -323,7 +317,6 @@
 				068CBC5F250CFFFB00953DB4 /* Extensions.swift in Sources */,
 				068CBC65250D201B00953DB4 /* StorageManager.swift in Sources */,
 				068CBC63250D200100953DB4 /* DatabaseManager.swift in Sources */,
-				068CBC6B250D532B00953DB4 /* ExploreConversationsViewController.swift in Sources */,
 				06DE7243250CF87A00AA0CC7 /* NewConversationViewController.swift in Sources */,
 				06DE723F250CF83A00AA0CC7 /* RegisterViewController.swift in Sources */,
 				068CBC71250E8F2400953DB4 /* UserModel.swift in Sources */,
@@ -335,7 +328,6 @@
 				06DE7225250CF6A400AA0CC7 /* SceneDelegate.swift in Sources */,
 				06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */,
 				068CBC6D250D689F00953DB4 /* ChatViewController.swift in Sources */,
-				06DE7241250CF85600AA0CC7 /* PhotoViewerViewController.swift in Sources */,
 				068CBC6F250D71ED00953DB4 /* ChatModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
