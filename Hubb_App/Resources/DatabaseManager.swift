@@ -9,6 +9,7 @@
 import Foundation
 import FirebaseDatabase
 import MessageKit
+import FirebaseAnalytics
 
 final class DatabaseManager {
     
@@ -36,7 +37,7 @@ extension DatabaseManager {
     /// Parameters
     /// - `email`:              Target email to be checked
     /// - `completion`:   Async closure to return with result
-    public func userExists(with email: String, completion: @escaping ((Bool) -> Void)) {
+    public func userExists(with email: String, completion: @escaping ((Bool) -> Void)) throws -> Void {
         
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
         
@@ -210,10 +211,9 @@ extension DatabaseManager {
 // MARK: - Sending messages / conversations
 extension DatabaseManager {
     
-    /// Retrieves all messages for a given group
     public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<[Message], Error>) -> Void) {
         
-        database.child("group_messages/\(id)").observe(.value, with: {snapshot in
+        database.child("group_messages/\(id)").observeSingleEvent(of: .value, with: {snapshot in
             guard let _ = snapshot.value else {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
@@ -269,6 +269,65 @@ extension DatabaseManager {
             completion(.success(messages))
         })
     }
+    
+    public func newMessagesForConversation(with id: String, completion: @escaping (Result<Message, Error>) -> Void) {
+        
+        database.child("group_messages/\(id)").observe(.value, with: {snapshot in
+            guard let _ = snapshot.value else {
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            
+            let children = snapshot.children.allObjects as! [DataSnapshot]
+            
+            guard let lastChild = children.last,
+                  let currentMessageInfo = lastChild.value as? [String: Any],
+                    let senderName = currentMessageInfo["sender_name"] as? String,
+                    let senderUid = currentMessageInfo["sender_uid"] as? String,
+                    let content = currentMessageInfo["content"] as? String,
+                    let messageId = currentMessageInfo["message_id"] as? String,
+                    let dateString = currentMessageInfo["date"] as? String,
+                    let type = currentMessageInfo["type"] as? String,
+                    let _ = currentMessageInfo["group_id"] as? String,
+                    let _ = currentMessageInfo["is_read"] as? Bool,
+                    let date = ChatViewController.dateFormatter.date(from: dateString) else {
+                        completion(.failure(DatabaseError.failedToFetch))
+                        return
+                }
+                
+                var kind: MessageKind?
+                if type == "photo" {
+                    guard let imageUrl = URL(string: content),
+                          let placeHolder = UIImage(systemName: "person") else {
+                        return
+                    }
+                    let media = Media(url: imageUrl,
+                                      image: nil,
+                                      placeholderImage: placeHolder,
+                                      size: CGSize(width: 300, height: 300))
+                    kind = .photo(media)
+                }
+                else {
+                    kind = .text(content)
+                }
+                
+                guard let finalKind = kind else {
+                    return
+                }
+                
+                let sender = Sender(photoURL: "",
+                                    senderId: senderUid,
+                                    displayName: senderName)
+                
+                let currentMessage = Message(sender: sender,
+                                         messageId: messageId,
+                                         sentDate: date,
+                                         kind: finalKind)
+    
+            completion(.success(currentMessage))
+        })
+    }
+    
         
     /// Fetches all existing conversations
     public func getAllConversations(completion: @escaping (Result<[Group], Error>) -> Void) {
@@ -341,12 +400,12 @@ extension DatabaseManager {
     // Sends a message with target conversation and message
     public func sendMessage(to groupId: String, newMessage: Message, sender: Sender, joined: Bool, completion: @escaping (Bool) -> Void) {
 
-        let newMessageReference = database.child("group_messages").child(groupId).childByAutoId()
-
-        guard let messageId = newMessageReference.key else {
+        guard let messageId = database.child("group_messages").child(groupId).childByAutoId().key else {
             completion(false)
             return
         }
+        
+        let newMessageReference = database.child("group_messages/\(groupId)/\(messageId)")
         
         let dateString = ChatViewController.dateFormatter.string(from: Date())
     
@@ -412,6 +471,7 @@ extension DatabaseManager {
                 self?.database.child("group_detail/\(groupId)/members").observeSingleEvent(of: .value, with: { snapshot in
                     guard var members = snapshot.value as? [String],
                           let uid = UserDefaults.standard.value(forKey: "uid") as? String else {
+                        completion(false)
                         return
                     }
                     
@@ -438,7 +498,11 @@ extension DatabaseManager {
                                     completion(false)
                                     return
                                 }
-                                print("successfully updated last message")
+                                
+                                Analytics.logEvent(AnalyticsEventJoinGroup, parameters: [
+                                    AnalyticsParameterGroupID: "\(groupId)",
+                                    "uid": uid as NSObject
+                                ])
                                 
                                 completion(true)
                             })
@@ -456,15 +520,6 @@ extension DatabaseManager {
                 completion(true)
             }
             })
-            
-//            self?.database.child("group_detail/\(groupId)/last_message").setValue(lastMessage, withCompletionBlock: { error, _ in
-//                guard error == nil else {
-//                    completion(false)
-//                    return
-//                }
-//                print("successfully updated last message")
-//                completion(true)
-//            })
         }
 
 }
@@ -542,44 +597,6 @@ extension DatabaseManager {
         })
         
     }
-    /// Fetches and returns all conversations for the user with passed in uid
-//    public func getAllConversationsForUser(for uid: String, completion: @escaping (Result<[Group], Error>) -> Void) {
-//        database.child("users/\(uid)/groups").observe(.value, with: { [weak self] snapshot in
-//            guard let joinedGroups = snapshot.value as? [String],
-//                let strongSelf = self else {
-//                    completion(.failure(DatabaseError.failedToFetch))
-//                    return
-//            }
-//
-//            strongSelf.database.child("group_detail").observeSingleEvent(of: .value, with: { snapshot in
-//                guard let currentGroups = snapshot.value as? [String: Any] else {
-//                    return
-//                }
-//
-//
-//
-//            })
-//
-//            // convert dictionaries into our model. first need to validate all keys are present
-//            let groups: [Group] = value.compactMap({ dictionary in
-//                print(dictionary)
-//                guard let conversationId = dictionary["id"] as? String,
-//                    let name = dictionary["name"] as? String,
-//                    let otherUserEmail = dictionary["other_user_email"] as? String,
-//                    let latestMessage = dictionary["latest_message"] as? [String: Any],
-//                    let date = latestMessage["date"] as? String,
-//                    let message = latestMessage["message"] as? String,
-//                    let isRead = latestMessage["is_read"] as? Bool else{
-//                        return nil
-//                }
-//                // create and return model
-//                let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
-//                return Conversation(id: conversationId, name: name, otherUserEmail: otherUserEmail, latestMessage: latestMessageObject)
-//            })
-//            completion(.success(conversations))
-//
-//        })
-//    }
     
 }
 

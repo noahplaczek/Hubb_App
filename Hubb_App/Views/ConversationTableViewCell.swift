@@ -99,7 +99,11 @@ class ConversationTableViewCell: UITableViewCell {
 //
 //        }
 //
-        if model.members > 1 {
+        if model.name == "Welcome to Hubb" {
+            groupNumberLabel.text = "Intro Group"
+        }
+        
+        else if model.members > 1 {
             groupNumberLabel.text = "\(model.members) Chatting"
 //            groupNumberLabel.text = latestMessage.senderName + ": " + latestMessage.text
         }

@@ -39,7 +39,6 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     init(group: Group) {
         self.groupName = group.name
-//        self.groupDescription = group.description
         self.groupId = group.id
         self.joined = group.joined
         super.init(nibName: nil, bundle: nil)
@@ -64,11 +63,17 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
         guard let id = groupId else{
             return
         }
+        
         listenForMessages(id: id)
+        messagesCollectionView.messagesDataSource = self
+        messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messagesDisplayDelegate = self
+        messagesCollectionView.messageCellDelegate = self
+        messageInputBar.delegate = self
+        
         view.backgroundColor = .white
         messagesCollectionView.backgroundColor = .white
         messageInputBar.backgroundView.backgroundColor = .white
-        
         messageInputBar.inputTextView.textColor = .black
         
         NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -85,12 +90,6 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
         self.navigationItem.hidesBackButton = true
         let newBackButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(back))
         self.navigationItem.leftBarButtonItem = newBackButton
-        
-        messagesCollectionView.messagesDataSource = self
-        messagesCollectionView.messagesLayoutDelegate = self
-        messagesCollectionView.messagesDisplayDelegate = self
-        messagesCollectionView.messageCellDelegate = self
-        messageInputBar.delegate = self
         
         setupInputButton()
         
@@ -120,7 +119,6 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
             return
         }
         DatabaseManager.shared.removeMessagesObserver(groupId: groupId)
-        messages.removeAll()
         self.navigationController?.popViewController(animated: true)
     }
     
@@ -136,6 +134,10 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
         }
     
     private func presentInputActionSheet() {
+            guard groupName != "Welcome to Hubb" else {
+                return
+            }
+        
             let actionSheet = UIAlertController(title: nil,
                                                 message: nil,
                                                 preferredStyle: .actionSheet)
@@ -168,7 +170,7 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
             guard let groupId = self?.groupId else {
                 return
             }
-            let vc = ReportContentViewController(groupID: groupId, userID: "")
+            let vc = ReportContentViewController(groupID: groupId, userID: nil)
                         
             vc.completion = { [weak self] bool in
                 guard let strongSelf = self else {
@@ -193,8 +195,6 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-//        messageInputBar.inputTextView.becomeFirstResponder()
-        
     }
     
     private func listenForMessages(id: String) {
@@ -209,27 +209,67 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
                 
                 self?.messages = messages
                 DispatchQueue.main.async {
-
                     self?.messagesCollectionView.reloadDataAndKeepOffset()
-                    
-                    guard let currentMessages = self?.messagesCollectionView.indexPathsForVisibleItems,
-                          let lastMessage = self?.messagesCollectionView.indexPathForLastItem,
-                          let firstChatLoad = self?.firstChatLoad else {
-                        return
-                    }
-                    
-                    if(firstChatLoad) {
-                        self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
-                        self?.firstChatLoad = false
-                    }
-        
-                    if currentMessages.contains(lastMessage) {self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)}
+                    self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
                 }
             case .failure(let error):
+                self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please exit chat and try again.")
                 print("failed to get messages: \(error)")
+            }
+            
+            DatabaseManager.shared.newMessagesForConversation(with: id, completion: { result in
+                guard let firstChatLoad = self?.firstChatLoad else {
+                    return
+                }
+                switch result {
+                case .success(let message):
+                    
+                    if(firstChatLoad) {
+                        self?.firstChatLoad = false
+                    }
+                    else {
+                        self?.reloadMessagesData(message: message)
+                    }
+                    case .failure(let error):
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please exit chat and try again.")
+                    print("failed to get messages: \(error)")
+                }
+            })
+        })
+    }
+    
+    private func reloadMessagesData(message: Message) {
+        self.messagesCollectionView.performBatchUpdates({
+            self.messages.append(message)
+            self.messagesCollectionView.insertSections([self.messages.count - 1])
+            if self.messages.count >= 2 {
+                self.messagesCollectionView.reloadSections([self.messages.count - 2])
+                self.messagesCollectionView.reloadDataAndKeepOffset()
+                
+            }
+        }, completion: { [weak self] _ in
+            if self?.isLastSectionVisible() == true {
+                self?.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
             }
         })
     }
+    
+    private func isLastSectionVisible() -> Bool {
+        let currentMessages = messagesCollectionView.indexPathsForVisibleItems
+        guard let lastMessage = indexPathForLastItem else {
+            return false
+        }
+        
+        return currentMessages.contains(lastMessage)
+    }
+    
+    private var indexPathForLastItem: IndexPath? {
+        let lastSection = messagesCollectionView.numberOfSections - 1
+        guard lastSection >= 0, messagesCollectionView.numberOfItems(inSection: lastSection) > 0 else { return nil }
+        return IndexPath(item: messagesCollectionView.numberOfItems(inSection: lastSection) - 1, section: lastSection)
+    }
+    
+    
     
 }
 
@@ -238,9 +278,14 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         guard !text.replacingOccurrences(of: " ", with: "").isEmpty,
             let selfSender = self.selfSender,
             let groupId = self.groupId else {
-                print("not sending")
+            showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
                 return
         }
+        guard groupName != "Welcome to Hubb" else {
+            return
+        }
+        
+        messageInputBar.inputTextView.text = nil
         
         let message = Message(sender: selfSender,
                               messageId: "placeholder",
@@ -254,9 +299,9 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             if success {
                 print("message sent")
                 strongSelf.joined = true
-                strongSelf.messageInputBar.inputTextView.text = nil
-                strongSelf.messagesCollectionView.scrollToBottom()
+                strongSelf.messagesCollectionView.scrollToLastItem(at: .bottom, animated: false)
             } else {
+                self?.showAlert(alertText: "Uh oh", alertMessage: "There was an issue sending this message. Please try again.")
                 print("failed to send")
             }
         })
@@ -283,8 +328,6 @@ extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, Messa
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-        // messagekit framework uses sections to separate messages
-        // single section per message
         return messages[indexPath.section]
     }
     
@@ -295,7 +338,6 @@ extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, Messa
     func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
         let sender = message.sender
         if sender.senderId == selfSender?.senderId {
-            // our message
             return .link
         }
         return .gray
@@ -319,7 +361,7 @@ extension ChatViewController: MessagesDataSource, MessagesDisplayDelegate, Messa
         
         actionSheet.addAction(UIAlertAction(title: "Report User", style: .destructive, handler: { [weak self] _ in
 
-            let vc = ReportContentViewController(groupID: "", userID: senderId)
+            let vc = ReportContentViewController(groupID: nil, userID: senderId)
             let navVC = UINavigationController(rootViewController: vc)
             self?.present(navVC, animated: true)
         }))
@@ -404,12 +446,14 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                         strongSelf.joined = true
                     }
                     else {
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There was an issue sending this photo. Please try again.")
                         print("failed to send photo message")
                     }
 
                 })
 
             case .failure(let error):
+                self?.showAlert(alertText: "Uh oh", alertMessage: "There was an issue sending this photo. Please try again.")
                 print("message photo upload error: \(error)")
             }
         })

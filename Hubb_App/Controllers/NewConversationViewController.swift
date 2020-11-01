@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseAnalytics
 
 class NewConversationViewController: UIViewController, UITextViewDelegate {
     
@@ -157,53 +158,65 @@ class NewConversationViewController: UIViewController, UITextViewDelegate {
         dismiss(animated: true, completion: nil)
     }
     
-    @objc private func createGroup() {
+    @objc private func createGroup() throws {
         
         groupNameField.resignFirstResponder()
-        guard
-            let groupName = groupNameField.text,
-            groupName != "60 Characters Max",
-            !groupName.isEmpty
-        else {
-                groupCreationError(message: "Please enter a Chat Name")
-                return
-        }
-        guard let groupCreatorUid = UserDefaults.standard.value(forKey: "uid") as? String else {
-            return
-        }
-
-        let date = Date()
-        let format = DateFormatter()
-        format.dateFormat = "MM-dd-yyyy"
-        let formattedDate = format.string(from: date)
         
-        let newGroup = Group(id: nil, name: groupName, date: formattedDate, creator: groupCreatorUid, joined: true, members: 1, latestMessage: nil)
-
-        DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self]  result in
-            guard let strongSelf = self else {
+        let validation = Validation()
+        
+        do {
+            let groupName = try validation.validateInputField(groupNameField.text)
+            
+            guard let groupCreatorUid = UserDefaults.standard.value(forKey: "uid") as? String else {
+                throw InputError.systemError
+            }
+            
+            guard groupName != "Welcome to Hubb" else {
+                showAlert(alertText: "Invalid Group Name", alertMessage: "Please enter a valid group name")
                 return
             }
-            switch result {
-            case .success(let group):
-                strongSelf.dismiss(animated: true, completion: {
-                    guard let strongSelf = self else {
-                        return
-                    }
-                    strongSelf.completion?(group)
-                })
-            case .failure(let error):
-                print("Failed to create conversation: \(error)")
-            }
+            
+            let date = Date()
+            let format = DateFormatter()
+            format.dateFormat = "MM-dd-yyyy"
+            let formattedDate = format.string(from: date)
+            
+            let newGroup = Group(id: nil, name: groupName, date: formattedDate, creator: groupCreatorUid, joined: true, members: 1, latestMessage: nil)
+            
+            DatabaseManager.shared.createNewConversation(group: newGroup, completion: { [weak self]  result in
+                guard let strongSelf = self else {
+                    self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                    return
+                }
+                switch result {
+                case .success(let group):
+                    strongSelf.dismiss(animated: true, completion: {
+                        guard let strongSelf = self,
+                              let groupId = group.id else {
+                            return
+                        }
+                        
+                        Analytics.logEvent("create_group", parameters: [
+                            "new_group": groupId as NSObject,
+                            "uid": group.creator as NSObject
+                        ])
+                        
+                        strongSelf.completion?(group)
+                    })
+                case .failure(let error):
+                    self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                    print("Failed to create conversation: \(error)")
+                }
+                
+            })
+        }
+        catch InputError.emptyField {
+            showAlert(alertText: "Missing Fields", alertMessage: "Please enter all information")
+        }
+        catch {
+            showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+        }
 
-        })
-    }
-    
-    func groupCreationError(message: String) {
-        let alert = UIAlertController(title: "Whoops!", message: message, preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Dismiss", style:  .cancel, handler: nil))
-        
-        present(alert, animated: true)
     }
 
 }

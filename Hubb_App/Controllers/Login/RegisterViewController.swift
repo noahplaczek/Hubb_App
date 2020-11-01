@@ -8,13 +8,10 @@
 
 import UIKit
 import FirebaseAuth
-//import JGProgressHUD
+import FirebaseAnalytics
 
 class RegisterViewController: UIViewController {
     
-//    private let spinner = JGProgressHUD(style: .dark)
-    
-    private var listeningForConversations = false
     private var activeTextField : UITextField? = nil
     private var isChecked = false
     
@@ -23,18 +20,6 @@ class RegisterViewController: UIViewController {
         scrollView.clipsToBounds = true
         return scrollView
     }()
-    
-    // Profile Picture
-//    private let imageView: UIImageView = {
-//        let imageView = UIImageView()
-//        imageView.image = UIImage(systemName: "person.circle")
-//        imageView.tintColor = .gray
-//        imageView.contentMode = .scaleAspectFit
-//        imageView.layer.masksToBounds = true
-//        imageView.layer.borderWidth = 2
-//        imageView.layer.borderColor = UIColor.lightGray.cgColor
-//        return imageView
-//    }()
     
     private let imageView: UIImageView = {
         let imageView = UIImageView()
@@ -47,7 +32,6 @@ class RegisterViewController: UIViewController {
         let label = UILabel()
         label.text = "Where your university comes alive"
         label.font = .italicSystemFont(ofSize: 20)
-//            .systemFont(ofSize: 20, weight: .semibold)
         label.textColor = ConversationsViewController.myColor
         return label
     }()
@@ -207,9 +191,7 @@ class RegisterViewController: UIViewController {
         scrollView.addSubview(privacyPolicyLabel)
         scrollView.addSubview(privacyPolicyButton)
         scrollView.addSubview(termsButton)
-        // 896 / XX = 52
-        // 40
-    }
+        }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -259,6 +241,13 @@ class RegisterViewController: UIViewController {
         scrollView.frame = view.bounds
         let size = scrollView.width / 3
         let fieldHeight = scrollView.height / 17
+        var smallerSize = false
+        if scrollView.width < 330 {
+            smallerSize = true
+            privacyPolicyLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+            privacyPolicyButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .caption1)
+            termsButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .caption1)
+        }
         
         imageView.frame = CGRect(x: (scrollView.width-size)/2,
                                  y: scrollView.height/9,
@@ -271,39 +260,63 @@ class RegisterViewController: UIViewController {
         firstNameField.frame = CGRect(x: 30,
                                   y: sloganLabel.bottom+10,
                                   width: scrollView.width-60,
-                                  height: fieldHeight) // generally accepted standard
+                                  height: fieldHeight)
         lastNameField.frame = CGRect(x: 30,
                                   y: firstNameField.bottom+10,
                                   width: scrollView.width-60,
-                                  height: fieldHeight) // generally accepted standard
+                                  height: fieldHeight)
         emailField.frame = CGRect(x: 30,
                                   y: lastNameField.bottom+10,
                                   width: scrollView.width-60,
-                                  height: fieldHeight) // generally accepted standard
+                                  height: fieldHeight)
         passwordField.frame = CGRect(x: 30,
                                      y: emailField.bottom+10,
                                      width: scrollView.width-60,
                                      height: fieldHeight)
-        privacyPolicyLabel.frame = CGRect(x: 30,
-                                   y: passwordField.bottom+10,
-                                   width: 240,
-                                   height: 50)
-        privacyPolicyButton.frame = CGRect(x: 102,
-                                           y: passwordField.bottom+34.5,
-                                   width: 94.75,
-                                   height: 22)
-        termsButton.frame = CGRect(x: 196.75,
-                                   y: passwordField.bottom+34.5,
-                                   width: 80,
-                           height: 22)
-        checkMark.frame = CGRect(x: scrollView.width-60,
-                                   y: passwordField.bottom+20,
-                                   width: 30,
-                                   height: 30)
-        registerButton.frame = CGRect(x: 30,
-                                   y: privacyPolicyLabel.bottom+20,
-                                   width: scrollView.width-60,
-                                   height: 52)
+        if smallerSize {
+            privacyPolicyLabel.frame = CGRect(x: 32,
+                                              y: passwordField.bottom+5,
+                                              width: 220,
+                                              height: 15)
+            privacyPolicyButton.frame = CGRect(x: 30,
+                                               y: passwordField.bottom+20,
+                                               width: 85,
+                                               height: 15)
+            termsButton.frame = CGRect(x: 110,
+                                       y: passwordField.bottom+20,
+                                       width: 70,
+                                       height: 15)
+            checkMark.frame = CGRect(x: scrollView.width-60,
+                                     y: passwordField.bottom+10,
+                                     width: 30,
+                                     height: 30)
+            registerButton.frame = CGRect(x: 30,
+                                          y: privacyPolicyLabel.bottom+25,
+                                          width: scrollView.width-60,
+                                          height: 40)
+        }
+        else {
+            privacyPolicyLabel.frame = CGRect(x: 30,
+                                              y: passwordField.bottom+10,
+                                              width: 240,
+                                              height: 50)
+            privacyPolicyButton.frame = CGRect(x: 102,
+                                               y: passwordField.bottom+34.5,
+                                               width: 94.75,
+                                               height: 22)
+            termsButton.frame = CGRect(x: 196.75,
+                                       y: passwordField.bottom+34.5,
+                                       width: 80,
+                                       height: 22)
+            checkMark.frame = CGRect(x: scrollView.width-60,
+                                     y: passwordField.bottom+20,
+                                     width: 30,
+                                     height: 30)
+            registerButton.frame = CGRect(x: 30,
+                                          y: privacyPolicyLabel.bottom+20,
+                                          width: scrollView.width-60,
+                                          height: 52)
+        }
     }
     
     @objc private func didTapLogin() {
@@ -312,84 +325,80 @@ class RegisterViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    @objc private func registerButtonTapped() {
+    @objc func registerButtonTapped() {
         
         firstNameField.resignFirstResponder()
         lastNameField.resignFirstResponder()
         emailField.resignFirstResponder()
         passwordField.resignFirstResponder()
         
-        guard
-            let email = emailField.text,
-            let password = passwordField.text,
-            let firstName = firstNameField.text,
-            let lastName = lastNameField.text,
-            !email.isEmpty,
-            !password.isEmpty,
-            !firstName.isEmpty,
-            !lastName.isEmpty
-            // password.count >= 6
-            else {
-                alertUserLoginError(is: LoginError.emptyField)
-                return
-        }
-        if !email.hasSuffix("@depaul.edu") {
-            alertUserLoginError(is: LoginError.notCollegeEmail)
-        }
-        if email == "@depaul.edu" {
-            alertUserLoginError(is: LoginError.notCollegeEmail)
-        }
+        let validate = Validation()
         
-        if isChecked {
-            
-//            spinner.show(in: view)
+        do {
+            let firstName = try validate.validateLoginField(firstNameField.text)
+            let lastName = try validate.validateLoginField(lastNameField.text)
+            let email = try validate.validateEmail(emailField.text)
+            let password = try validate.validatePassword(passwordField.text)
+ 
+
+            guard isChecked  else {
+                throw LoginError.termsNotChecked
+            }
             
             // Firebase Register
-            
-//            DatabaseManager.shared.userExists(with: email, completion: {[weak self] exists in
-//                guard let strongSelf = self else {
-//                    return
-//                }
-//
-////                DispatchQueue.main.async {
-////                    strongSelf.spinner.dismiss()
-////                }
-//
-//                guard !exists else {
-//                    self?.alertUserLoginError(is: LoginError.userExists)
-//                    return
-//                }
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { [weak self] authResult, error in
+                guard authResult != nil, error == nil,
+                      let user = FirebaseAuth.Auth.auth().currentUser else {
+                    self?.showAlert(alertText: "Account Exists", alertMessage: "Looks like a user account for that email address already exists")
+                    return
+                }
                 
-                FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { [weak self] authResult, error in
-                    guard authResult != nil, error == nil,
-                    let user = FirebaseAuth.Auth.auth().currentUser else {
-                        self?.alertUserLoginError(is: .userExists)
-                        return
+                let uid = user.uid
+                
+                UserDefaults.standard.setValue("\(lastName)", forKey: "last_name")
+                UserDefaults.standard.setValue("\(firstName)", forKey: "first_name")
+                UserDefaults.standard.setValue("\(email)", forKey: "email")
+                UserDefaults.standard.setValue("\(uid)", forKey: "uid")
+                                
+                let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email, uid: uid)
+                DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                    if success {
+                        print("User successfully added to database")
+                        
+                        if email.hasSuffix("depaul.edu") {
+                            Analytics.setUserProperty("depaul", forName: "school")
+                        }
+                        else if email.hasSuffix("uic.edu") {
+                            Analytics.setUserProperty("uic", forName: "school")
+                        }
+                        
+                        NotificationCenter.default.post(name: .didLogInNotification, object: nil)
                     }
-                    
-                    let uid = user.uid
-                    
-                    UserDefaults.standard.setValue("\(lastName)", forKey: "last_name")
-                    UserDefaults.standard.setValue("\(firstName)", forKey: "first_name")
-                    UserDefaults.standard.setValue(email, forKey: "email")
-                    UserDefaults.standard.setValue(uid, forKey: "uid")
-                    
-                    let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email, uid: uid)
-                    DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
-                        if success {
-                            print("User successfully added to database")
-                            NotificationCenter.default.post(name: .didLogInNotification, object: nil)
-                        }
-                        else {
-                            print("Error adding user to database")
-                        }
-                    })
-                    self?.navigationController?.dismiss(animated: true, completion: nil)
+                    else {
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                        print("Error adding user to database")
+                    }
                 })
+                self?.navigationController?.dismiss(animated: true, completion: nil)
+            })
         }
-        
-        else {
-            alertUserLoginError(is: .termsNotChecked)
+        catch LoginError.emptyField {
+            showAlert(alertText: "Missing Fields", alertMessage: "Please enter all information")
+        }
+        catch LoginError.notCollegeEmail {
+            showAlert(alertText: "Invalid Email", alertMessage: "Please enter a valid college email")
+        }
+        catch LoginError.userExists {
+            showAlert(alertText: "Account Exists", alertMessage: "Looks like a user account for that email address already exists")
+        }
+        catch LoginError.termsNotChecked {
+            showAlert(alertText: "Accept Terms", alertMessage: "Please review and accept the Terms and Privacy Policy")
+        }
+        catch LoginError.passwordLength {
+            showAlert(alertText: "Password Min Length", alertMessage: "Please enter a password that is at least 6 characters")
+        }
+        catch {
+            showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
         }
     }
     
@@ -403,27 +412,6 @@ class RegisterViewController: UIViewController {
             isChecked = false
         }
     }
-        
-        func alertUserLoginError(is error: LoginError) {
-            let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
-            switch error {
-            case .emptyField:
-                alert.title = "Missing Data"
-                alert.message = "Please enter all information"
-            case .notCollegeEmail:
-                alert.title = "Invalid Email"
-                alert.message = "Please enter a valid college email"
-            case .userExists:
-                alert.message = "Looks like a user account for that email address already exists"
-            case .termsNotChecked:
-                alert.title = "Please review and accept the Terms and Privacy Policy"
-            case .loginFailure:
-                break
-            }
-            alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
-            
-            present(alert, animated: true)
-        }
     
 }
 
@@ -446,12 +434,11 @@ extension RegisterViewController: UITextFieldDelegate {
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        // set the activeTextField to the selected textfield
         self.activeTextField = textField
       }
         
-      // when user click 'done' or dismiss the keyboard
       func textFieldDidEndEditing(_ textField: UITextField) {
         self.activeTextField = nil
       }
 }
+

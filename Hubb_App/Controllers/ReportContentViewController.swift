@@ -12,10 +12,10 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
 
     public var completion: ((Bool) -> (Void))?
      
-    private let groupId: String
-    private let userId: String
+    private let groupId: String?
+    private let userId: String?
 
-    init(groupID: String, userID: String) {
+    init(groupID: String?, userID: String?) {
         self.groupId = groupID
         self.userId = userID
         super.init(nibName: nil, bundle: nil)
@@ -146,8 +146,6 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
                                   y: reportContentField.bottom+40,
                                   width: scrollView.width-60,
                                   height: 52)
-
-        
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -165,45 +163,52 @@ class ReportContentViewController: UIViewController, UITextViewDelegate {
     @objc private func reportContent() {
         
         reportContentField.resignFirstResponder()
-
-        guard
-            let reportReason = reportContentField.text,
-            reportReason != "Description of inappropriate content...",
-            !reportReason.replacingOccurrences(of: " ", with: "").isEmpty,
-            !reportReason.replacingOccurrences(of: "\n", with: "").isEmpty
-        else {
-                groupCreationError(message: "Please enter a reason for reporting content")
-                return
+        
+        let validation = Validation()
+        
+        do {
+            
+            let reportReason = try validation.validateInputField(reportContentField.text)
+            
+            if let groupId = groupId {
+                DatabaseManager.shared.reportGroup(groupId: groupId, reason: reportReason, completion: { [weak self]  success in
+                    guard let strongSelf = self else {
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                        return
+                    }
+                    if success {
+                        strongSelf.completion?(true)
+                        strongSelf.dismiss(animated: true, completion: nil)
+                    }
+                    else {
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                        print("Failed to report conversation")
+                    }
+                    
+                })
+            }
+            if let userId = userId {
+                DatabaseManager.shared.reportUser(userId: userId, reason: reportReason, completion: { [weak self]  success in
+                    guard let strongSelf = self else {
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                        return
+                    }
+                    if success {
+                        strongSelf.dismiss(animated: true, completion: nil)
+                    }
+                    else {
+                        self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+                        print("Failed to report user")
+                    }
+                    
+                })
+            }
         }
-
-        if groupId != "" {
-            DatabaseManager.shared.reportGroup(groupId: groupId, reason: reportReason, completion: { [weak self]  success in
-                guard let strongSelf = self else {
-                    return
-                }
-                if success {
-                    strongSelf.completion?(true)
-                    strongSelf.dismiss(animated: true, completion: nil)
-                }
-                else {
-                    print("Failed to report conversation")
-                }
-                
-            })
+        catch InputError.emptyField {
+            showAlert(alertText: "Missing Fields", alertMessage: "Please enter all information")
         }
-        else {
-            DatabaseManager.shared.reportUser(userId: userId, reason: reportReason, completion: { [weak self]  success in
-                guard let strongSelf = self else {
-                    return
-                }
-                if success {
-                    strongSelf.dismiss(animated: true, completion: nil)
-                }
-                else {
-                    print("Failed to report user")
-                }
-                
-            })
+        catch {
+            showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
         }
         
         

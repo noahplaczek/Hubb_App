@@ -9,8 +9,10 @@
 /* Begin PBXBuildFile section */
 		0603A5FF2530083E00F32ED4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0603A5FE2530083E00F32ED4 /* GoogleService-Info.plist */; };
 		0603A628253539BA00F32ED4 /* ReportContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0603A627253539BA00F32ED4 /* ReportContentViewController.swift */; };
+		0620E491253D0E83003B14EA /* ValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0620E490253D0E83003B14EA /* ValidationTests.swift */; };
+		0620E499253D20B8003B14EA /* InputErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0620E498253D20B8003B14EA /* InputErrors.swift */; };
+		0620E4A3253EA6BE003B14EA /* DatabaseManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0620E4A2253EA6BE003B14EA /* DatabaseManagerTest.swift */; };
 		068CBC5F250CFFFB00953DB4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC5E250CFFFB00953DB4 /* Extensions.swift */; };
-		068CBC61250D1D6E00953DB4 /* GoogleService-Info1.plist in Resources */ = {isa = PBXBuildFile; fileRef = 068CBC60250D1D6E00953DB4 /* GoogleService-Info1.plist */; };
 		068CBC63250D200100953DB4 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC62250D200100953DB4 /* DatabaseManager.swift */; };
 		068CBC65250D201B00953DB4 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC64250D201B00953DB4 /* StorageManager.swift */; };
 		068CBC67250D476300953DB4 /* ConversationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */; };
@@ -18,7 +20,8 @@
 		068CBC6D250D689F00953DB4 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6C250D689F00953DB4 /* ChatViewController.swift */; };
 		068CBC6F250D71ED00953DB4 /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC6E250D71ED00953DB4 /* ChatModels.swift */; };
 		068CBC71250E8F2400953DB4 /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC70250E8F2400953DB4 /* UserModel.swift */; };
-		068CBC73250E9EC300953DB4 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068CBC72250E9EC300953DB4 /* ProfileViewModel.swift */; };
+		06ABECD92540F90B006E7A1E /* ValidateInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06ABECD82540F90B006E7A1E /* ValidateInput.swift */; };
+		06ABECE12540FD2E006E7A1E /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06ABECE02540FD2E006E7A1E /* Alert.swift */; };
 		06DE7223250CF6A400AA0CC7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7222250CF6A400AA0CC7 /* AppDelegate.swift */; };
 		06DE7225250CF6A400AA0CC7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7224250CF6A400AA0CC7 /* SceneDelegate.swift */; };
 		06DE7227250CF6A400AA0CC7 /* ConversationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7226250CF6A400AA0CC7 /* ConversationsViewController.swift */; };
@@ -28,15 +31,28 @@
 		06DE723D250CF82E00AA0CC7 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE723C250CF82E00AA0CC7 /* LoginViewController.swift */; };
 		06DE723F250CF83A00AA0CC7 /* RegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE723E250CF83A00AA0CC7 /* RegisterViewController.swift */; };
 		06DE7243250CF87A00AA0CC7 /* NewConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */; };
-		06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */; };
-		3E3B78A5F9EC4673AF4AAF2E /* Pods_Hubb_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */; };
+		BD79C21A3988E8A0A4032F0D /* Pods_Hubb_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C749B45D619B2D6E6AA85DD6 /* Pods_Hubb_App.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0620E489253D0B7F003B14EA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 06DE7217250CF6A400AA0CC7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 06DE721E250CF6A400AA0CC7;
+			remoteInfo = Hubb_App;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0603A5FE2530083E00F32ED4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		0603A627253539BA00F32ED4 /* ReportContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportContentViewController.swift; sourceTree = "<group>"; };
+		0620E484253D0B7F003B14EA /* Hubb_AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Hubb_AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0620E488253D0B7F003B14EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0620E490253D0E83003B14EA /* ValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationTests.swift; sourceTree = "<group>"; };
+		0620E498253D20B8003B14EA /* InputErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputErrors.swift; sourceTree = "<group>"; };
+		0620E4A2253EA6BE003B14EA /* DatabaseManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManagerTest.swift; sourceTree = "<group>"; };
 		068CBC5E250CFFFB00953DB4 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		068CBC60250D1D6E00953DB4 /* GoogleService-Info1.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info1.plist"; sourceTree = "<group>"; };
 		068CBC62250D200100953DB4 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		068CBC64250D201B00953DB4 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		068CBC66250D476300953DB4 /* ConversationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationTableViewCell.swift; sourceTree = "<group>"; };
@@ -44,7 +60,8 @@
 		068CBC6C250D689F00953DB4 /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		068CBC6E250D71ED00953DB4 /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 		068CBC70250E8F2400953DB4 /* UserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
-		068CBC72250E9EC300953DB4 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		06ABECD82540F90B006E7A1E /* ValidateInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateInput.swift; sourceTree = "<group>"; };
+		06ABECE02540FD2E006E7A1E /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		06DE721F250CF6A400AA0CC7 /* Hubb_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hubb_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		06DE7222250CF6A400AA0CC7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		06DE7224250CF6A400AA0CC7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -56,31 +73,48 @@
 		06DE723C250CF82E00AA0CC7 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		06DE723E250CF83A00AA0CC7 /* RegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterViewController.swift; sourceTree = "<group>"; };
 		06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationViewController.swift; sourceTree = "<group>"; };
-		06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
-		746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.debug.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.debug.xcconfig"; sourceTree = "<group>"; };
-		75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hubb_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C1724DCB77ACBDC350A7F465 /* Pods-Hubb_App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.release.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.release.xcconfig"; sourceTree = "<group>"; };
+		2C4FF498D88952A252DB5200 /* Pods-Hubb_App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.debug.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.debug.xcconfig"; sourceTree = "<group>"; };
+		C749B45D619B2D6E6AA85DD6 /* Pods_Hubb_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hubb_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE165C8CB40332761901A101 /* Pods-Hubb_App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hubb_App.release.xcconfig"; path = "Target Support Files/Pods-Hubb_App/Pods-Hubb_App.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0620E481253D0B7F003B14EA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		06DE721C250CF6A400AA0CC7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3E3B78A5F9EC4673AF4AAF2E /* Pods_Hubb_App.framework in Frameworks */,
+				BD79C21A3988E8A0A4032F0D /* Pods_Hubb_App.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0620E485253D0B7F003B14EA /* Hubb_AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				0620E488253D0B7F003B14EA /* Info.plist */,
+				0620E490253D0E83003B14EA /* ValidationTests.swift */,
+				0620E4A2253EA6BE003B14EA /* DatabaseManagerTest.swift */,
+			);
+			path = Hubb_AppTests;
+			sourceTree = "<group>";
+		};
 		06DE7216250CF6A400AA0CC7 = {
 			isa = PBXGroup;
 			children = (
 				06DE7221250CF6A400AA0CC7 /* Hubb_App */,
+				0620E485253D0B7F003B14EA /* Hubb_AppTests */,
 				06DE7220250CF6A400AA0CC7 /* Products */,
 				DFC7E097EBC2F3E2EDB9B075 /* Pods */,
-				18330B0278AA70AD204AB52B /* Frameworks */,
+				D054F7427AE09B50076FC6AC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -88,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				06DE721F250CF6A400AA0CC7 /* Hubb_App.app */,
+				0620E484253D0B7F003B14EA /* Hubb_AppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,7 +130,6 @@
 		06DE7221250CF6A400AA0CC7 /* Hubb_App */ = {
 			isa = PBXGroup;
 			children = (
-				068CBC60250D1D6E00953DB4 /* GoogleService-Info1.plist */,
 				0603A5FE2530083E00F32ED4 /* GoogleService-Info.plist */,
 				06DE723A250CF74A00AA0CC7 /* Resources */,
 				06DE7239250CF74500AA0CC7 /* ViewModels */,
@@ -115,7 +149,6 @@
 				06DE7242250CF87A00AA0CC7 /* NewConversationViewController.swift */,
 				068CBC6C250D689F00953DB4 /* ChatViewController.swift */,
 				0603A627253539BA00F32ED4 /* ReportContentViewController.swift */,
-				06DE7244250CF88C00AA0CC7 /* ProfileViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -136,7 +169,9 @@
 				068CBC68250D47A700953DB4 /* ConversationsModel.swift */,
 				068CBC6E250D71ED00953DB4 /* ChatModels.swift */,
 				068CBC70250E8F2400953DB4 /* UserModel.swift */,
-				068CBC72250E9EC300953DB4 /* ProfileViewModel.swift */,
+				0620E498253D20B8003B14EA /* InputErrors.swift */,
+				06ABECD82540F90B006E7A1E /* ValidateInput.swift */,
+				06ABECE02540FD2E006E7A1E /* Alert.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -178,10 +213,10 @@
 			path = Login;
 			sourceTree = "<group>";
 		};
-		18330B0278AA70AD204AB52B /* Frameworks */ = {
+		D054F7427AE09B50076FC6AC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				75E79BAF860A94AA62CD64E1 /* Pods_Hubb_App.framework */,
+				C749B45D619B2D6E6AA85DD6 /* Pods_Hubb_App.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -189,8 +224,8 @@
 		DFC7E097EBC2F3E2EDB9B075 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */,
-				C1724DCB77ACBDC350A7F465 /* Pods-Hubb_App.release.xcconfig */,
+				2C4FF498D88952A252DB5200 /* Pods-Hubb_App.debug.xcconfig */,
+				CE165C8CB40332761901A101 /* Pods-Hubb_App.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -198,15 +233,34 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0620E483253D0B7F003B14EA /* Hubb_AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0620E48B253D0B7F003B14EA /* Build configuration list for PBXNativeTarget "Hubb_AppTests" */;
+			buildPhases = (
+				0620E480253D0B7F003B14EA /* Sources */,
+				0620E481253D0B7F003B14EA /* Frameworks */,
+				0620E482253D0B7F003B14EA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0620E48A253D0B7F003B14EA /* PBXTargetDependency */,
+			);
+			name = Hubb_AppTests;
+			productName = Hubb_AppTests;
+			productReference = 0620E484253D0B7F003B14EA /* Hubb_AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		06DE721E250CF6A400AA0CC7 /* Hubb_App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 06DE7233250CF6A600AA0CC7 /* Build configuration list for PBXNativeTarget "Hubb_App" */;
 			buildPhases = (
-				8FD30535552FDEC837B0F636 /* [CP] Check Pods Manifest.lock */,
+				5248F17BF2BE1D5E9CD3B31B /* [CP] Check Pods Manifest.lock */,
 				06DE721B250CF6A400AA0CC7 /* Sources */,
 				06DE721C250CF6A400AA0CC7 /* Frameworks */,
 				06DE721D250CF6A400AA0CC7 /* Resources */,
-				6F4E5D18F80986D961A652CF /* [CP] Embed Pods Frameworks */,
+				3B2E06A87BCA32F6015E0CA7 /* [CP] Embed Pods Frameworks */,
+				06ABECD52540F614006E7A1E /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -223,10 +277,14 @@
 		06DE7217250CF6A400AA0CC7 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1160;
+				LastSwiftUpdateCheck = 1200;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Hubb;
 				TargetAttributes = {
+					0620E483253D0B7F003B14EA = {
+						CreatedOnToolsVersion = 12.0.1;
+						TestTargetID = 06DE721E250CF6A400AA0CC7;
+					};
 					06DE721E250CF6A400AA0CC7 = {
 						CreatedOnToolsVersion = 11.6;
 					};
@@ -246,17 +304,24 @@
 			projectRoot = "";
 			targets = (
 				06DE721E250CF6A400AA0CC7 /* Hubb_App */,
+				0620E483253D0B7F003B14EA /* Hubb_AppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0620E482253D0B7F003B14EA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		06DE721D250CF6A400AA0CC7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				06DE722F250CF6A600AA0CC7 /* LaunchScreen.storyboard in Resources */,
-				068CBC61250D1D6E00953DB4 /* GoogleService-Info1.plist in Resources */,
 				06DE722C250CF6A600AA0CC7 /* Assets.xcassets in Resources */,
 				0603A5FF2530083E00F32ED4 /* GoogleService-Info.plist in Resources */,
 				06DE722A250CF6A400AA0CC7 /* Main.storyboard in Resources */,
@@ -266,7 +331,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		6F4E5D18F80986D961A652CF /* [CP] Embed Pods Frameworks */ = {
+		06ABECD52540F614006E7A1E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
+		};
+		3B2E06A87BCA32F6015E0CA7 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -283,7 +365,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Hubb_App/Pods-Hubb_App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8FD30535552FDEC837B0F636 /* [CP] Check Pods Manifest.lock */ = {
+		5248F17BF2BE1D5E9CD3B31B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -308,6 +390,15 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0620E480253D0B7F003B14EA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0620E4A3253EA6BE003B14EA /* DatabaseManagerTest.swift in Sources */,
+				0620E491253D0E83003B14EA /* ValidationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		06DE721B250CF6A400AA0CC7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -322,17 +413,26 @@
 				068CBC71250E8F2400953DB4 /* UserModel.swift in Sources */,
 				06DE7227250CF6A400AA0CC7 /* ConversationsViewController.swift in Sources */,
 				06DE7223250CF6A400AA0CC7 /* AppDelegate.swift in Sources */,
+				06ABECE12540FD2E006E7A1E /* Alert.swift in Sources */,
 				068CBC67250D476300953DB4 /* ConversationTableViewCell.swift in Sources */,
 				0603A628253539BA00F32ED4 /* ReportContentViewController.swift in Sources */,
-				068CBC73250E9EC300953DB4 /* ProfileViewModel.swift in Sources */,
+				06ABECD92540F90B006E7A1E /* ValidateInput.swift in Sources */,
 				06DE7225250CF6A400AA0CC7 /* SceneDelegate.swift in Sources */,
-				06DE7245250CF88C00AA0CC7 /* ProfileViewController.swift in Sources */,
 				068CBC6D250D689F00953DB4 /* ChatViewController.swift in Sources */,
+				0620E499253D20B8003B14EA /* InputErrors.swift in Sources */,
 				068CBC6F250D71ED00953DB4 /* ChatModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0620E48A253D0B7F003B14EA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 06DE721E250CF6A400AA0CC7 /* Hubb_App */;
+			targetProxy = 0620E489253D0B7F003B14EA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		06DE7228250CF6A400AA0CC7 /* Main.storyboard */ = {
@@ -354,6 +454,50 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0620E48C253D0B7F003B14EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7PTZ99A86Z;
+				HEADER_SEARCH_PATHS = "${SRCROOT}/Pods/Firebase/CoreOnly/Sources";
+				INFOPLIST_FILE = Hubb_AppTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Hubb.Hubb-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hubb_App.app/Hubb_App";
+			};
+			name = Debug;
+		};
+		0620E48D253D0B7F003B14EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7PTZ99A86Z;
+				HEADER_SEARCH_PATHS = "${SRCROOT}/Pods/Firebase/CoreOnly/Sources";
+				INFOPLIST_FILE = Hubb_AppTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Hubb.Hubb-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hubb_App.app/Hubb_App";
+			};
+			name = Release;
+		};
 		06DE7231250CF6A600AA0CC7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -472,11 +616,13 @@
 		};
 		06DE7234250CF6A600AA0CC7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 746DC28D6E2381B38B4D94AA /* Pods-Hubb_App.debug.xcconfig */;
+			baseConfigurationReference = 2C4FF498D88952A252DB5200 /* Pods-Hubb_App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Noah Placzek (UFQ38JZ76Z)";
 				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 5;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 7PTZ99A86Z;
 				INFOPLIST_FILE = Hubb_App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
@@ -494,11 +640,12 @@
 		};
 		06DE7235250CF6A600AA0CC7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C1724DCB77ACBDC350A7F465 /* Pods-Hubb_App.release.xcconfig */;
+			baseConfigurationReference = CE165C8CB40332761901A101 /* Pods-Hubb_App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Distribution: Noah Placzek (7PTZ99A86Z)";
 				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 7PTZ99A86Z;
 				INFOPLIST_FILE = Hubb_App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
@@ -508,7 +655,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Hubb.Hubb-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = HubbDevelopmentProfile;
+				PROVISIONING_PROFILE_SPECIFIER = HubbAppStoreProfile;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -517,6 +664,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0620E48B253D0B7F003B14EA /* Build configuration list for PBXNativeTarget "Hubb_AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0620E48C253D0B7F003B14EA /* Debug */,
+				0620E48D253D0B7F003B14EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		06DE721A250CF6A400AA0CC7 /* Build configuration list for PBXProject "Hubb_App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

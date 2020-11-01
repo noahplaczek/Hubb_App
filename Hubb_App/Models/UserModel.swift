@@ -13,7 +13,4 @@ struct ChatAppUser {
     let lastName: String
     let emailAddress: String
     let uid: String
-    // let profilePictureUrl: String
-    // no need to store password, esp unencrypted
-    
 }

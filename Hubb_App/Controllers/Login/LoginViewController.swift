@@ -8,11 +8,9 @@
 
 import UIKit
 import FirebaseAuth 
-//import JGProgressHUD
 
 class LoginViewController: UIViewController {
-
-    //    private let spinner = JGProgressHUD(style: .dark)
+    
     var activeTextField : UITextField? = nil
     
     private let scrollView: UIScrollView = {
@@ -39,8 +37,6 @@ class LoginViewController: UIViewController {
         field.layer.borderColor = UIColor.lightGray.cgColor
         field.attributedPlaceholder = NSAttributedString(string: "School Email...", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
         field.backgroundColor = .white
-        
-        // Buffer so text is not flush against the left of the text field
         field.leftView = UIView(frame: CGRect(x: 0, y: 0 , width: 5, height: 0))
         field.leftViewMode = .always
         
@@ -94,6 +90,9 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginButton)
         
+        print(view.height)
+        print(view.width)
+        
         NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
@@ -108,34 +107,29 @@ class LoginViewController: UIViewController {
         
         emailField.resignFirstResponder()
         passwordField.resignFirstResponder()
-    
-        guard let email = emailField.text, let password = passwordField.text,
-            !email.isEmpty, !password.isEmpty else {
-                alertUserLoginError(is: LoginError.emptyField)
-                return
-        }
         
-//        spinner.show(in: view)
+        let validate = Validation()
+    
+        do {
+            let email = try validate.validateLoginField(emailField.text)
+            let password = try validate.validateLoginField(passwordField.text)
         
         // Firebase Log In
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: {[weak self] authResult, error in
             guard let strongSelf = self,
-            let currentUser = FirebaseAuth.Auth.auth().currentUser,
-                let result = authResult,
-                error == nil else {
-                self?.alertUserLoginError(is: LoginError.loginFailure)
-                    return
+                  let currentUser = FirebaseAuth.Auth.auth().currentUser,
+                  let result = authResult,
+                  error == nil else {
+                self?.showAlert(alertText: "Invalid Credentials", alertMessage: "Please enter a valid email and password")
+                return
             }
-        
+            
             let uid = currentUser.uid
             
             UserDefaults.standard.set(uid, forKey: "uid")
             UserDefaults.standard.set(email, forKey: "email")
             
             print(uid)
-//            DispatchQueue.main.async {
-//                strongSelf.spinner.dismiss()
-//            }
             
             let user = result.user
             
@@ -144,8 +138,9 @@ class LoginViewController: UIViewController {
                 case .success(let userData):
                     UserDefaults.standard.set("\(userData.lastName)", forKey: "last_name")
                     UserDefaults.standard.set("\(userData.firstName)", forKey: "first_name")
-                    NotificationCenter.default.post(name: .didLogInNotification, object: nil) 
+                    NotificationCenter.default.post(name: .didLogInNotification, object: nil)
                 case .failure(let error):
+                    self?.showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
                     print("Failed to read data with error: \(error)")
                 }
                 
@@ -153,29 +148,13 @@ class LoginViewController: UIViewController {
             print("Logged in user: \(user)")
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })
-        
-    }
-    
-    func alertUserLoginError(is error: LoginError) {
-        let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
-        switch error {
-        case .notCollegeEmail:
-            break
-        case .emptyField:
-            alert.title = "Empty Field"
-            alert.message = "Please enter a valid email and password"
-        case .userExists:
-            break
-        case .termsNotChecked:
-            break
-        case .loginFailure:
-            alert.title = "Invalid Credentials"
-            alert.message = "Please enter a valid email and password"
         }
-        
-        alert.addAction(UIAlertAction(title: "Dismiss", style:  .cancel, handler: nil))
-        
-        present(alert, animated: true)
+        catch LoginError.emptyField {
+            showAlert(alertText: "Missing Fields", alertMessage: "Please enter all information")
+        }
+        catch {
+            showAlert(alertText: "Uh oh", alertMessage: "There appears to have been an issue. Please try again")
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -183,6 +162,13 @@ class LoginViewController: UIViewController {
         scrollView.frame = view.bounds
         let size = scrollView.width/3
         let fieldHeight = scrollView.height / 17
+        
+        var smallerSize = false
+        if scrollView.width < 330 {
+            smallerSize = true
+        }
+
+        
         imageView.frame = CGRect(x: (scrollView.width-size)/2,
                                  y: scrollView.height/5,
                                  width: size,
@@ -195,10 +181,18 @@ class LoginViewController: UIViewController {
                                   y: emailField.bottom + 10,
                                   width: scrollView.width - 60,
                                  height: fieldHeight)
+        if smallerSize {
+            loginButton.frame = CGRect(x: 30,
+                                      y: passwordField.bottom + 20,
+                                      width: scrollView.width - 60,
+                                     height: 40)
+        }
+        else {
         loginButton.frame = CGRect(x: 30,
                                   y: passwordField.bottom + 20,
                                   width: scrollView.width - 60,
                                  height: 52)
+        }
     }
 
     @objc func keyboardWillShow(notification: NSNotification) {
@@ -226,10 +220,6 @@ class LoginViewController: UIViewController {
       self.scrollView.frame.origin.y = 0
     }
     
-}
-
-enum LoginError {
-    case notCollegeEmail, emptyField, userExists, termsNotChecked, loginFailure
 }
 
 extension LoginViewController: UITextFieldDelegate {

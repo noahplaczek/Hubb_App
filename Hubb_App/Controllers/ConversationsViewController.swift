@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseAnalytics
 
 class ConversationsViewController: UIViewController {
         
@@ -102,24 +103,16 @@ class ConversationsViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         tableView.backgroundColor = .white
-        
-        print("how many times")
-        
+            
         validateAuth()
-        view.addSubview(tableView)
-        tableView.tableFooterView = UIView()
         
         NotificationCenter.default.addObserver(self, selector: #selector(signedIn), name: .didLogInNotification, object: nil)
 
-        
         navigationController?.navigationBar.barTintColor = ConversationsViewController.myColor
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationController?.navigationBar.tintColor = UIColor.white
         navigationController?.navigationBar.topItem?.titleView = searchBar
         searchBar.delegate = self
-        
-        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
-        self.tableView.addGestureRecognizer(swipeGesture)
         
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "ellipsis"), for: .normal)
@@ -127,70 +120,21 @@ class ConversationsViewController: UIViewController {
         let barButton = UIBarButtonItem(customView: button)
         self.navigationItem.leftBarButtonItem = barButton
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
+        createChatButton.addTarget(self, action: #selector(didTapComposeButton),
+                              for: .touchUpInside)
         
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        self.tableView.addGestureRecognizer(swipeGesture)
+        
+        view.addSubview(tableView)
+        tableView.tableFooterView = UIView()
         view.addSubview(scrollView)
         scrollView.addSubview(noResultsLabel)
         scrollView.addSubview(noResultsSearchTerm)
         scrollView.addSubview(noResultsCreateChat)
         scrollView.addSubview(createChatButton)
         view.addSubview(noConversationsLabel)
-        
-        createChatButton.addTarget(self, action: #selector(didTapComposeButton),
-                              for: .touchUpInside)
-        
         setupTableView()
-    }
-    
-    @objc func signedIn() {
-        listenForMyConversations()
-        startListeningForConversations()
-    }
-
-    @objc func didTapActionButton() {
-        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
-        actionSheet.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { [weak self] _ in
-            
-            guard let strongSelf = self else {
-                return
-            }
-            
-            UserDefaults.standard.setValue(nil, forKey: "last_name")
-            UserDefaults.standard.setValue(nil, forKey: "first_name")
-            UserDefaults.standard.setValue(nil, forKey: "name")
-            
-            do {
-                try FirebaseAuth.Auth.auth().signOut()
-                strongSelf.myGroups.removeAll()
-                strongSelf.groups.removeAll()
-                strongSelf.allGroups.removeAll()
-                DatabaseManager.shared.removeGroupObservers(completion: {success in
-                    if success {
-                        print("removed all observers")
-                    }
-                    else {
-                        print("error in removing observers")
-                    }
-                })
-                let vc = RegisterViewController()
-                let nav = UINavigationController(rootViewController: vc)
-                nav.modalPresentationStyle = .fullScreen
-                strongSelf.present(nav, animated: false)
-            }
-            catch {
-                print("Failed to log out")
-            }
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        present(actionSheet, animated: true)
-        
-    }
-    
-    
-    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        self.view.endEditing(true)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -246,6 +190,58 @@ class ConversationsViewController: UIViewController {
         tableView.dataSource = self
     }
     
+    @objc func signedIn() {
+        listenForMyConversations()
+        startListeningForConversations()
+    }
+
+    @objc func didTapActionButton() {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { [weak self] _ in
+            
+            guard let strongSelf = self else {
+                return
+            }
+            
+            do {
+                try FirebaseAuth.Auth.auth().signOut()
+                DatabaseManager.shared.removeGroupObservers(completion: {success in
+                    if success {
+                        print("removed all observers")
+                    }
+                    else {
+                        print("error in removing observers")
+                    }
+                })
+                UserDefaults.standard.setValue(nil, forKey: "last_name")
+                UserDefaults.standard.setValue(nil, forKey: "first_name")
+                UserDefaults.standard.setValue(nil, forKey: "uid")
+                UserDefaults.standard.setValue(nil, forKey: "email")
+                strongSelf.myGroups.removeAll()
+                strongSelf.groups.removeAll()
+                strongSelf.allGroups.removeAll()
+                let vc = RegisterViewController()
+                let nav = UINavigationController(rootViewController: vc)
+                nav.modalPresentationStyle = .fullScreen
+                strongSelf.present(nav, animated: false)
+            }
+            catch {
+                strongSelf.showAlert(alertText: "Uh oh", alertMessage: "There was an error logging you out. Try again.")
+                
+            }
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(actionSheet, animated: true)
+        
+    }
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        self.view.endEditing(true)
+    }
+
     private func startListeningForConversations() {
 
         print("starting conversation fetch...")
@@ -286,9 +282,7 @@ class ConversationsViewController: UIViewController {
     }
     
     private func listenForMyConversations() {
-                
-        print("we listening now boi")
-        
+                        
         DatabaseManager.shared.getMyGroups(completion: { [weak self] result in
             switch result {
             case .success(let myGroups):
@@ -318,7 +312,8 @@ class ConversationsViewController: UIViewController {
         let vc = NewConversationViewController()
         
         vc.completion = { [weak self] group in
-            guard let strongSelf = self else {
+            guard let strongSelf = self,
+                  let groupId = group.id else {
                 return
             }
             let vc = ChatViewController(group: group)
@@ -389,13 +384,22 @@ extension ConversationsViewController: UITableViewDelegate,UITableViewDataSource
 extension ConversationsViewController: UISearchBarDelegate {
     // USER SEARCH
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {
+        guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty,
+              let uid = UserDefaults.standard.value(forKey: "uid") as? String else {
             return
         }
         groups.removeAll()
 //        spinner.show(in: view)
         
         filterGroups(with: text)
+        
+        
+        Analytics.logEvent(AnalyticsEventSearch, parameters: [
+            AnalyticsParameterSearchTerm: text as NSObject,
+            "uid": uid as NSObject
+        ])
+
+        
     }
     
     func filterGroups(with term: String) {

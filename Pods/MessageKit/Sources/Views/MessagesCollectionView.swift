@@ -45,7 +45,7 @@ open class MessagesCollectionView: UICollectionView {
     /// The default value of this property is `false`.
     internal var showMessageTimestampOnSwipeLeft: Bool = false
 
-    public var indexPathForLastItem: IndexPath? {
+    private var indexPathForLastItem: IndexPath? {
         let lastSection = numberOfSections - 1
         guard lastSection >= 0, numberOfItems(inSection: lastSection) > 0 else { return nil }
         return IndexPath(item: numberOfItems(inSection: lastSection) - 1, section: lastSection)
