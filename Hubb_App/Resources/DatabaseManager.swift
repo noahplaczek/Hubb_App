@@ -111,11 +111,15 @@ extension DatabaseManager {
         let newGroupReference = database.child("group_detail").childByAutoId()
 
         guard let groupId = newGroupReference.key,
-              let senderName = UserDefaults.standard.value(forKey: "first_name") as? String else {
+              let senderFirstName = UserDefaults.standard.value(forKey: "first_name") as? String,
+              let senderLastName = UserDefaults.standard.value(forKey: "last_name") as? String else {
             completion(.failure(DatabaseError.failedToCreateGroup))
             return
         }
         let dateString = ChatViewController.dateFormatter.string(from: Date())
+        
+        let senderFirstInitial = senderLastName.prefix(1)
+        let senderName = senderFirstName + " " + senderFirstInitial
         
         let newGroup: [String: Any] = [
             "group_id": groupId,

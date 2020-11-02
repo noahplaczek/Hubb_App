@@ -29,9 +29,14 @@ class ChatViewController: MessagesViewController, MessageCellDelegate {
     
     private var selfSender: Sender? {
         guard let uid = UserDefaults.standard.value(forKey: "uid") as? String,
-        let displayName = UserDefaults.standard.value(forKey: "first_name") as? String else {
+              let senderFirstName = UserDefaults.standard.value(forKey: "first_name") as? String,
+              let senderLastName = UserDefaults.standard.value(forKey: "last_name") as? String else {
             return nil
         }
+        
+        let senderFirstInitial = senderLastName.prefix(1)
+        let displayName = senderFirstName + " " + senderFirstInitial
+        
         return Sender(photoURL: "",
                senderId: uid,
                displayName: displayName)
