@@ -129,6 +129,14 @@ class LoginViewController: UIViewController {
             UserDefaults.standard.set(uid, forKey: "uid")
             UserDefaults.standard.set(email, forKey: "email")
             
+            if email.hasSuffix("depaul.edu") {
+                UserDefaults.standard.setValue("depaul", forKey: "school")
+                
+            }
+            else if email.hasSuffix("uic.edu") {
+                UserDefaults.standard.setValue("uic", forKey: "school")
+            }
+            
             print(uid)
             
             let user = result.user

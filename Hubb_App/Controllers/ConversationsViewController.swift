@@ -135,6 +135,8 @@ class ConversationsViewController: UIViewController {
         scrollView.addSubview(createChatButton)
         view.addSubview(noConversationsLabel)
         setupTableView()
+        
+        createSegmentedControl()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -194,6 +196,40 @@ class ConversationsViewController: UIViewController {
         listenForMyConversations()
         startListeningForConversations()
     }
+    
+    func createSegmentedControl() {
+        let items = ["ALL", "Joined"]
+        let segmentedControl = UISegmentedControl(items: items)
+        segmentedControl.addTarget(self, action: #selector(barDidChange(_ :)), for: .valueChanged)
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        
+        let navigationBarHeight: CGFloat = self.navigationController!.navigationBar.frame.height
+        
+        view.addSubview(segmentedControl)
+        
+        print(view.leadingAnchor)
+        print(view.trailingAnchor)
+        print(view.topAnchor)
+        print(navigationBarHeight)
+        print(segmentedControl.height)
+        
+        NSLayoutConstraint.activate([
+            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: view.width / 4),
+            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -(view.width / 4)),
+            segmentedControl.topAnchor.constraint(equalTo: view.topAnchor, constant: navigationBarHeight + (segmentedControl.height * 2))
+        ])
+    }
+    
+    @objc func barDidChange(_ segmentedControl: UISegmentedControl) {
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            print("0")
+        case 1:
+            print("1")
+        default:
+            print("2")
+        }
+    }
 
     @objc func didTapActionButton() {
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
@@ -218,6 +254,7 @@ class ConversationsViewController: UIViewController {
                 UserDefaults.standard.setValue(nil, forKey: "first_name")
                 UserDefaults.standard.setValue(nil, forKey: "uid")
                 UserDefaults.standard.setValue(nil, forKey: "email")
+                UserDefaults.standard.setValue(nil, forKey: "school")
                 strongSelf.myGroups.removeAll()
                 strongSelf.groups.removeAll()
                 strongSelf.allGroups.removeAll()
@@ -312,8 +349,7 @@ class ConversationsViewController: UIViewController {
         let vc = NewConversationViewController()
         
         vc.completion = { [weak self] group in
-            guard let strongSelf = self,
-                  let groupId = group.id else {
+            guard let strongSelf = self else {
                 return
             }
             let vc = ChatViewController(group: group)

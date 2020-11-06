@@ -37,30 +37,30 @@ extension DatabaseManager {
     /// Parameters
     /// - `email`:              Target email to be checked
     /// - `completion`:   Async closure to return with result
-    public func userExists(with email: String, completion: @escaping ((Bool) -> Void)) throws -> Void {
-        
-        let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
-        
-        database.child("users").observeSingleEvent(of: .value, with: {snapshot in
-            guard let users = snapshot.value as? [String: Any] else {
-                completion(false)
-                return
-            }
-            
-            if users.contains(where: {
-                guard let user = $0.value as? [String: String] else {
-                    return false
-                }
-                return safeEmail == user["email"]
-            }) {
-                completion(true)
-                return
-            }
-            
-            completion(false)
-        })
-        
-    }
+//    public func userExists(with email: String, completion: @escaping ((Bool) -> Void)) throws -> Void {
+//
+//        let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+//
+//        database.child("users").observeSingleEvent(of: .value, with: {snapshot in
+//            guard let users = snapshot.value as? [String: Any] else {
+//                completion(false)
+//                return
+//            }
+//
+//            if users.contains(where: {
+//                guard let user = $0.value as? [String: String] else {
+//                    return false
+//                }
+//                return safeEmail == user["email"]
+//            }) {
+//                completion(true)
+//                return
+//            }
+//
+//            completion(false)
+//        })
+//
+//    }
     
     
     /// Insert new user to database
@@ -73,19 +73,38 @@ extension DatabaseManager {
             "uid": user.uid,
         ]
         
-        database.child("users").child("\(user.uid)").setValue(newElement, withCompletionBlock: { error, _ in
-            guard error == nil else {
-                completion(false)
-                return
-            }
-            completion(true)
-        })
-        
+        if user.emailAddress.hasSuffix("depaul.edu") {
+            database.child("depaul/users").child("\(user.uid)").setValue(newElement, withCompletionBlock: { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+                UserDefaults.standard.setValue("depaul", forKey: "school")
+                completion(true)
+            })
+        }
+        else if user.emailAddress.hasSuffix("uic.edu") {
+            database.child("uic/users").child("\(user.uid)").setValue(newElement, withCompletionBlock: { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+                UserDefaults.standard.setValue("uic", forKey: "school")
+                completion(true)
+            })
+        }
+        else {
+            completion(false)
+        }
     }
     
     /// Returns dictionary node at child path
     public func getDataForUser(uid: String, completion: @escaping (Result<ChatAppUser, Error>) -> Void) {
-        database.child("users").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
+        
+        database.child("\(school)/users").child(uid).observeSingleEvent(of: .value, with: { snapshot in
             guard let userInfo = snapshot.value as? [String: Any],
                 let firstName: String = userInfo["first_name"] as? String,
                 let lastName: String = userInfo["last_name"] as? String,
@@ -108,7 +127,13 @@ extension DatabaseManager {
 extension DatabaseManager {
     
     public func createNewConversation(group: Group, completion: @escaping (Result<Group, Error>) -> Void) {
-        let newGroupReference = database.child("group_detail").childByAutoId()
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+        
+            completion(.failure(DatabaseError.failedToCreateGroup))
+            return
+        }
+        
+        let newGroupReference = database.child("\(school)/group_detail").childByAutoId()
 
         guard let groupId = newGroupReference.key,
               let senderFirstName = UserDefaults.standard.value(forKey: "first_name") as? String,
@@ -149,7 +174,7 @@ extension DatabaseManager {
             }
             print("succesfully added to Group Details")
             
-            let firstMessageReference = strongSelf.database.child("group_messages").child(groupId).childByAutoId()
+            let firstMessageReference = strongSelf.database.child("\(school)/group_messages").child(groupId).childByAutoId()
             
             guard let messageId = firstMessageReference.key else {
                 completion(.failure(DatabaseError.failedToCreateGroup))
@@ -175,7 +200,7 @@ extension DatabaseManager {
                     return
                 }
                 // Update User to include Group ID in their groups
-                strongSelf.database.child("users").child("\(group.creator)").observeSingleEvent(of: .value, with: { snapshot in
+                strongSelf.database.child("\(school)/users").child("\(group.creator)").observeSingleEvent(of: .value, with: { snapshot in
                     guard let userInfo = snapshot.value as? [String: Any]
                         else {
                             return
@@ -193,7 +218,7 @@ extension DatabaseManager {
                         newUserGroups = [groupId]
                     }
                     
-                    strongSelf.database.child("users").child("\(group.creator)").child("groups").setValue(newUserGroups, withCompletionBlock: { error, _ in
+                    strongSelf.database.child("\(school)/users").child("\(group.creator)").child("groups").setValue(newUserGroups, withCompletionBlock: { error, _ in
                         guard error == nil else {
                             completion(.failure(DatabaseError.failedToCreateGroup))
                             return
@@ -216,8 +241,11 @@ extension DatabaseManager {
 extension DatabaseManager {
     
     public func getAllMessagesForConversation(with id: String, completion: @escaping (Result<[Message], Error>) -> Void) {
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
         
-        database.child("group_messages/\(id)").observeSingleEvent(of: .value, with: {snapshot in
+        database.child("\(school)/group_messages/\(id)").observeSingleEvent(of: .value, with: {snapshot in
             guard let _ = snapshot.value else {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
@@ -275,8 +303,11 @@ extension DatabaseManager {
     }
     
     public func newMessagesForConversation(with id: String, completion: @escaping (Result<Message, Error>) -> Void) {
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
         
-        database.child("group_messages/\(id)").observe(.value, with: {snapshot in
+        database.child("\(school)/group_messages/\(id)").observe(.value, with: {snapshot in
             guard let _ = snapshot.value else {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
@@ -335,7 +366,11 @@ extension DatabaseManager {
         
     /// Fetches all existing conversations
     public func getAllConversations(completion: @escaping (Result<[Group], Error>) -> Void) {
-        database.child("group_detail").observe(.value, with: {snapshot in
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
+        
+        database.child("\(school)/group_detail").observe(.value, with: {snapshot in
             guard let _ = snapshot.value as? [String: Any],
                   let uid = UserDefaults.standard.value(forKey: "uid") as? String else {
                 completion(.failure(DatabaseError.failedToFetch))
@@ -388,11 +423,12 @@ extension DatabaseManager {
     }
     
     public func getMyGroups(completion: @escaping (Result<[String], Error>) -> Void) {
-        guard let uid = UserDefaults.standard.value(forKey: "uid") else {
+        guard let uid = UserDefaults.standard.value(forKey: "uid") as? String,
+              let school = UserDefaults.standard.value(forKey: "school") as? String else {
             completion(.failure(DatabaseError.failedToFetch))
             return
         }
-        database.child("users/\(uid)/groups").observe(.value, with: {snapshot in
+        database.child("\(school)/users/\(uid)/groups").observe(.value, with: {snapshot in
         guard let groups = snapshot.value as? [String] else {
             completion(.failure(DatabaseError.failedToFetch))
             return
@@ -403,13 +439,16 @@ extension DatabaseManager {
     
     // Sends a message with target conversation and message
     public func sendMessage(to groupId: String, newMessage: Message, sender: Sender, joined: Bool, completion: @escaping (Bool) -> Void) {
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
 
-        guard let messageId = database.child("group_messages").child(groupId).childByAutoId().key else {
+        guard let messageId = database.child("\(school)/group_messages").child(groupId).childByAutoId().key else {
             completion(false)
             return
         }
         
-        let newMessageReference = database.child("group_messages/\(groupId)/\(messageId)")
+        let newMessageReference = database.child("\(school)/group_messages/\(groupId)/\(messageId)")
         
         let dateString = ChatViewController.dateFormatter.string(from: Date())
     
@@ -472,7 +511,7 @@ extension DatabaseManager {
             }
             
             if joined == false {
-                self?.database.child("group_detail/\(groupId)/members").observeSingleEvent(of: .value, with: { snapshot in
+                self?.database.child("\(school)/group_detail/\(groupId)/members").observeSingleEvent(of: .value, with: { snapshot in
                     guard var members = snapshot.value as? [String],
                           let uid = UserDefaults.standard.value(forKey: "uid") as? String else {
                         completion(false)
@@ -480,14 +519,14 @@ extension DatabaseManager {
                     }
                     
                     members.append(uid)
-                    self?.database.child("group_detail/\(groupId)/members").setValue(members, withCompletionBlock: { error, _ in
+                    self?.database.child("\(school)/group_detail/\(groupId)/members").setValue(members, withCompletionBlock: { error, _ in
                         guard error == nil else {
                             completion(false)
                             return
                         }
                         print("successfully updated group members")
                         
-                        self?.database.child("users/\(uid)/groups").observeSingleEvent(of: .value, with: { snapshot in
+                        self?.database.child("\(school)/users/\(uid)/groups").observeSingleEvent(of: .value, with: { snapshot in
                             var newGroups: [String]
                             if let myGroups = snapshot.value as? [String] {
                                 newGroups = myGroups
@@ -497,7 +536,7 @@ extension DatabaseManager {
                                 newGroups = [groupId]
                             }
                             
-                            self?.database.child("users/\(uid)/groups").setValue(newGroups, withCompletionBlock: { error, _ in
+                            self?.database.child("\(school)/users/\(uid)/groups").setValue(newGroups, withCompletionBlock: { error, _ in
                                 guard error == nil else {
                                     completion(false)
                                     return
@@ -532,8 +571,11 @@ extension DatabaseManager {
 extension DatabaseManager {
     /// Insert new user to database
     public func reportGroup(groupId: String, reason: String, completion: @escaping (Bool) -> Void){
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
         
-        database.child("group_detail/\(groupId)/flagged_info").observeSingleEvent(of: .value, with: { [weak self] snapshot in
+        database.child("\(school)/group_detail/\(groupId)/flagged_info").observeSingleEvent(of: .value, with: { [weak self] snapshot in
             guard let flaggedInfo = snapshot.value as? [String: Any],
                   let totalFlagged = flaggedInfo["total_flagged"] as? Int else {
                 completion(false)
@@ -557,7 +599,7 @@ extension DatabaseManager {
                 "flagged_reason": newFlags
             ]
             
-            self?.database.child("group_detail/\(groupId)/flagged_info").setValue(newFlaggedInfo, withCompletionBlock: { error, _ in
+            self?.database.child("\(school)/group_detail/\(groupId)/flagged_info").setValue(newFlaggedInfo, withCompletionBlock: { error, _ in
                 guard error == nil else {
                     completion(false)
                     return
@@ -570,8 +612,11 @@ extension DatabaseManager {
     }
     
     public func reportUser(userId: String, reason: String, completion: @escaping (Bool) -> Void){
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
         
-        database.child("users/\(userId)").observeSingleEvent(of: .value, with: { [weak self] snapshot in
+        database.child("\(school)/users/\(userId)").observeSingleEvent(of: .value, with: { [weak self] snapshot in
             guard let user = snapshot.value as? [String: Any] else {
                 completion(false)
                 return
@@ -590,7 +635,7 @@ extension DatabaseManager {
             
             let newFlaggedInfo: [String] = newFlags
     
-            self?.database.child("users/\(userId)/flagged_reason").setValue(newFlaggedInfo, withCompletionBlock: { error, _ in
+            self?.database.child("\(school)/users/\(userId)/flagged_reason").setValue(newFlaggedInfo, withCompletionBlock: { error, _ in
                 guard error == nil else {
                     completion(false)
                     return
@@ -608,17 +653,22 @@ extension DatabaseManager {
 extension DatabaseManager {
     
     public func removeGroupObservers(completion: @escaping (Bool) -> Void) {
-        guard let uid = UserDefaults.standard.value(forKey: "uid") else {
+        guard let uid = UserDefaults.standard.value(forKey: "uid") as? String,
+              let school = UserDefaults.standard.value(forKey: "school") as? String else {
             completion(false)
             return
         }
-        database.child("group_detail").removeAllObservers()
-        database.child("users/\(uid)/groups").removeAllObservers()
+        database.child("\(school)/group_detail").removeAllObservers()
+        database.child("\(school)/users/\(uid)/groups").removeAllObservers()
         completion(true)
         //database.child("group_messages/\(id)").removeAllObservers()
     }
     
     public func removeMessagesObserver(groupId: String) {
-        database.child("group_messages/\(groupId)").removeAllObservers()
+        guard let school = UserDefaults.standard.value(forKey: "school") as? String else {
+            return
+        }
+        
+        database.child("\(school)/group_messages/\(groupId)").removeAllObservers()
     }
 }
